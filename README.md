@@ -34,7 +34,7 @@ jobs:
         uses: actions/checkout@v2
 
       - name: Run Pipelines Dispatch
-        uses: path-to-your-action-repo@v1
+        uses: gruntwork-io/pipelines-dispatch@v1.0.0
         with:
           account_id: ${{ secrets.ACCOUNT_ID }}
           repo: 'infrastructure-pipelines'

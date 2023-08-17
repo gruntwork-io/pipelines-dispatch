@@ -23,7 +23,7 @@ inputs:
     description: "The arguments to pass into Terragrunt"
     required: true
   token:
-    description: "GitHub PAT to clone the pipelines repo"
+    description: "GitHub PAT which has access to your infrastructure-live and infrastructure-pipelines repositories"
     required: true
   change_type:
     description: "What type of infrastructure change occurred"
