@@ -4,6 +4,12 @@ inputs:
   account_id:
     description: "The AWS Account in which the action will run"
     required: true
+  repo:
+    description: "The infrastructure-pipelines repo where jobs should be dispatched"
+    required: true
+  repo_owner:
+    description: "The owner of the infrastructure-pipelines repo where jobs should be dispatched"
+    required: true
   branch:
     description: "The branch against which Pipelines will run the action"
     required: true
@@ -41,8 +47,8 @@ runs:
       with:
         token: ${{ inputs.token }}
         ref: "refs/heads/main"
-        repo: dogfood-infrastructure-pipelines
-        owner: gruntwork-io-team
+        repo: ${{ inputs.repo }}
+        owner: ${{ inputs.repo_owner }}
         workflow: terragrunt-executor.yml
         workflow_inputs: '{
           "account": "${{ inputs.account_id }}",
@@ -59,8 +65,8 @@ runs:
       with:
         token: ${{ inputs.token }}
         ref: "refs/heads/main"
-        repo: dogfood-infrastructure-pipelines
-        owner: gruntwork-io-team
+        repo: ${{ inputs.repo }}
+        owner: ${{ inputs.repo_owner }}
         workflow: create-account-and-generate-baselines.yml
         workflow_inputs: '{
           "management_account": "${{ inputs.account_id }}",
@@ -78,8 +84,8 @@ runs:
       with:
         token: ${{ inputs.token }}
         ref: "refs/heads/main"
-        repo: dogfood-infrastructure-pipelines
-        owner: gruntwork-io-team
+        repo: ${{ inputs.repo }}
+        owner: ${{ inputs.repo_owner }}
         workflow: apply-new-account-baseline.yml
         workflow_inputs: '{
           "management_account": "${{ inputs.account_id }}",
@@ -97,8 +103,8 @@ runs:
       uses: Codex-/await-remote-run@v1.9.0
       with:
         token: ${{ inputs.token}}
-        repo: dogfood-infrastructure-pipelines
-        owner: gruntwork-io-team
+        repo: ${{ inputs.repo }}
+        owner: ${{ inputs.repo_owner }}
         run_id: ${{ steps.return_dispatch.outputs.run_id }}
         run_timeout_seconds: 3600 # one hour
         poll_interval_ms: 5000 # Optional
@@ -106,7 +112,7 @@ runs:
     - name: Completed
       if: ${{ always() && !contains(fromJSON('["AccountRequested", "AccountAdded"]'), inputs.change_type)}}
       shell: bash
-      run: echo "::notice ::Completed ${{ inputs.command }} for ${{ inputs.working_directory }} in acct ${{ inputs.account_id }}%0AFor details see https://github.com/gruntwork-io-team/dogfood-infrastructure-pipelines/actions/runs/${{ steps.return_dispatch.outputs.run_id }}"
+      run: echo "::notice ::Completed ${{ inputs.command }} for ${{ inputs.working_directory }} in acct ${{ inputs.account_id }}%0AFor details see https://github.com/${{ inputs.repo_owner }}/${{ inputs.repo }}/actions/runs/${{ steps.return_dispatch.outputs.run_id }}"
 
     - name: Post terragrunt logs as PR comment
       id: get_tg_logs
@@ -116,10 +122,10 @@ runs:
       shell: bash
       run: |
         RUN_ID="${{ steps.return_dispatch.outputs.run_id }}"
-        JOB_ID="$(gh api /repos/gruntwork-io-team/dogfood-infrastructure-pipelines/actions/runs/$RUN_ID/jobs | jq .jobs[0].id)"
-        JOB_LOGS="$(gh api /repos/gruntwork-io-team/dogfood-infrastructure-pipelines/actions/jobs/$JOB_ID/logs)"
-        JOB_URL="https://github.com/gruntwork-io-team/dogfood-infrastructure-pipelines/actions/runs/$RUN_ID/job/$JOB_ID"
-        JOB_LOGS_FAILED=$(gh run --repo gruntwork-io-team/dogfood-infrastructure-pipelines view --job $JOB_ID --log-failed)
+        JOB_ID="$(gh api /repos/${{ inputs.repo_owner }}/${{ inputs.repo }}/actions/runs/$RUN_ID/jobs | jq .jobs[0].id)"
+        JOB_LOGS="$(gh api /repos/${{ inputs.repo_owner }}/${{ inputs.repo }}/actions/jobs/$JOB_ID/logs)"
+        JOB_URL="https://github.com/${{ inputs.repo_owner }}/${{ inputs.repo }}/actions/runs/$RUN_ID/job/$JOB_ID"
+        JOB_LOGS_FAILED=$(gh run --repo ${{ inputs.repo_owner }}/${{ inputs.repo }} view --job $JOB_ID --log-failed)
         WORKING_DIR="${{ inputs.working_directory }}"
         REGEX='(Run gruntwork-io.*Post job cleanup)'
         if [[ "$JOB_LOGS" =~ $REGEX ]]; then LOGS_OUTPUT=${BASH_REMATCH[1]}; fi
@@ -135,10 +141,10 @@ runs:
       shell: bash
       run: |
         RUN_ID="${{ steps.return_dispatch.outputs.run_id }}"
-        JOB_ID="$(gh api /repos/gruntwork-io-team/dogfood-infrastructure-pipelines/actions/runs/$RUN_ID/jobs | jq .jobs[0].id)"
-        JOB_LOGS="$(gh api /repos/gruntwork-io-team/dogfood-infrastructure-pipelines/actions/jobs/$JOB_ID/logs)"
-        JOB_URL="https://github.com/gruntwork-io-team/dogfood-infrastructure-pipelines/actions/runs/$RUN_ID/job/$JOB_ID"
-        JOB_LOGS_FAILED=$(gh run --repo gruntwork-io-team/dogfood-infrastructure-pipelines view --job $JOB_ID --log-failed)
+        JOB_ID="$(gh api /repos/${{ inputs.repo_owner }}/${{ inputs.repo }}/actions/runs/$RUN_ID/jobs | jq .jobs[0].id)"
+        JOB_LOGS="$(gh api /repos/${{ inputs.repo_owner }}/${{ inputs.repo }}/actions/jobs/$JOB_ID/logs)"
+        JOB_URL="https://github.com/${{ inputs.repo_owner }}/${{ inputs.repo }}/actions/runs/$RUN_ID/job/$JOB_ID"
+        JOB_LOGS_FAILED=$(gh run --repo ${{ inputs.repo_owner }}/${{ inputs.repo }} view --job $JOB_ID --log-failed)
         WORKING_DIR="${{ inputs.working_directory }}"
         REGEX='(Run gruntwork-io.*Post job cleanup)'
         if [[ "$JOB_LOGS" =~ $REGEX ]]; then LOGS_OUTPUT=${BASH_REMATCH[1]}; fi
@@ -153,8 +159,8 @@ runs:
       uses: Codex-/await-remote-run@v1.9.0
       with:
         token: ${{ inputs.token}}
-        repo: dogfood-infrastructure-pipelines
-        owner: gruntwork-io-team
+        repo: ${{ inputs.repo }}
+        owner: ${{ inputs.repo_owner }}
         run_id: ${{ steps.return_dispatch_acct_req.outputs.run_id }}
         run_timeout_seconds: 3600 # one hour
         poll_interval_ms: 5000 # Optional
@@ -162,7 +168,7 @@ runs:
     - name: Completed Acct Req
       if: ${{ always() && inputs.change_type == 'AccountRequested' }}
       shell: bash
-      run: echo "::notice ::Completed ${{ inputs.command }} for ${{ inputs.working_directory }} in acct ${{ inputs.account_id }}%0AFor details see https://github.com/gruntwork-io-team/dogfood-infrastructure-pipelines/actions/runs/${{ steps.return_dispatch_acct_req.outputs.run_id }}"
+      run: echo "::notice ::Completed ${{ inputs.command }} for ${{ inputs.working_directory }} in acct ${{ inputs.account_id }}%0AFor details see https://github.com/${{ inputs.repo_owner }}/${{ inputs.repo }}/actions/runs/${{ steps.return_dispatch_acct_req.outputs.run_id }}"
 
     # Await account added
     - name: Await Acct Add Run ID ${{ steps.return_dispatch_acct_add.outputs.run_id }}
@@ -172,8 +178,8 @@ runs:
       uses: Codex-/await-remote-run@v1.9.0
       with:
         token: ${{ inputs.token}}
-        repo: dogfood-infrastructure-pipelines
-        owner: gruntwork-io-team
+        repo: ${{ inputs.repo }}
+        owner: ${{ inputs.repo_owner }}
         run_id: ${{ steps.return_dispatch_acct_add.outputs.run_id }}
         run_timeout_seconds: 3600 # one hour
         poll_interval_ms: 5000 # Optional
@@ -181,4 +187,4 @@ runs:
     - name: Completed Acct Add
       if: ${{ always() && inputs.change_type == 'AccountAdded' }}
       shell: bash
-      run: echo "::notice ::Completed ${{ inputs.command }} for ${{ inputs.working_directory }} in acct ${{ inputs.account_id }}%0AFor details see https://github.com/gruntwork-io-team/dogfood-infrastructure-pipelines/actions/runs/${{ steps.return_dispatch_acct_add.outputs.run_id }}"
+      run: echo "::notice ::Completed ${{ inputs.command }} for ${{ inputs.working_directory }} in acct ${{ inputs.account_id }}%0AFor details see https://github.com/${{ inputs.repo_owner }}/${{ inputs.repo }}/actions/runs/${{ steps.return_dispatch_acct_add.outputs.run_id }}"
