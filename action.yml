@@ -46,8 +46,7 @@ runs:
       id: return_dispatch
       with:
         token: ${{ inputs.token }}
-        ref: "refs/heads/feature/CORE-1147-pipelines-scaffold"
-#        ref: "refs/heads/main"
+        ref: "refs/heads/main"
         repo: ${{ inputs.repo }}
         owner: ${{ inputs.repo_owner }}
         workflow: terragrunt-executor.yml
