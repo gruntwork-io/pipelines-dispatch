@@ -114,17 +114,31 @@ runs:
       shell: bash
       run: echo "::notice ::Completed ${{ inputs.command }} for ${{ inputs.working_directory }} in acct ${{ inputs.account_id }}%0AFor details see https://github.com/${{ inputs.repo_owner }}/${{ inputs.repo }}/actions/runs/${{ steps.return_dispatch.outputs.run_id }}"
 
+    - name: Get Job ID & Terragrunt Run URL
+      id: jobs_data
+      env:
+        GH_TOKEN: ${{ inputs.token }}
+      shell: bash
+      run: |
+        run_id=${{ steps.return_dispatch.outputs.run_id }}
+        job_id="$(gh api /repos/${{ inputs.repo_owner }}/${{ inputs.repo }}/actions/runs/$run_id/jobs | jq .jobs[0].id)"
+        output=$(gh api /repos/${{ inputs.repo_owner }}/${{ inputs.repo }}/actions/jobs/$job_id)
+        step_number=$(echo "$output" | jq -r '.steps[] | select(.name == "Run terragrunt").number')
+        step_fragment="#step:$step_number:1" # Link to first line of the Run Terragrunt Step
+        job_url="https://github.com/${{ inputs.repo_owner }}/${{ inputs.repo }}/actions/runs/$run_id/job/$job_id$step_fragment"
+        echo "JOB_ID=$job_id" >> "$GITHUB_OUTPUT"
+        echo "JOB_URL=$job_url" >> "$GITHUB_OUTPUT"
+
     - name: Post terragrunt logs as PR comment
       id: get_tg_logs
       if: ${{ always() && contains(inputs.command, 'plan') }}
       env:
         GH_TOKEN: ${{ inputs.token }}
+        JOB_ID: ${{ steps.jobs_data.outputs.JOB_ID }}
+        JOB_URL: ${{ steps.jobs_data.outputs.JOB_URL }}
       shell: bash
       run: |
-        RUN_ID="${{ steps.return_dispatch.outputs.run_id }}"
-        JOB_ID="$(gh api /repos/${{ inputs.repo_owner }}/${{ inputs.repo }}/actions/runs/$RUN_ID/jobs | jq .jobs[0].id)"
         JOB_LOGS="$(gh api /repos/${{ inputs.repo_owner }}/${{ inputs.repo }}/actions/jobs/$JOB_ID/logs)"
-        JOB_URL="https://github.com/${{ inputs.repo_owner }}/${{ inputs.repo }}/actions/runs/$RUN_ID/job/$JOB_ID"
         JOB_LOGS_FAILED=$(gh run --repo ${{ inputs.repo_owner }}/${{ inputs.repo }} view --job $JOB_ID --log-failed)
         WORKING_DIR="${{ inputs.working_directory }}"
         REGEX='(Run gruntwork-io.*Post job cleanup)'
@@ -138,12 +152,11 @@ runs:
       if: ${{ always() && contains(inputs.command, 'apply') }}
       env:
         GH_TOKEN: ${{ inputs.token }}
+        JOB_ID: ${{ steps.jobs_data.outputs.JOB_ID }}
+        JOB_URL: ${{ steps.jobs_data.outputs.JOB_URL }}
       shell: bash
       run: |
-        RUN_ID="${{ steps.return_dispatch.outputs.run_id }}"
-        JOB_ID="$(gh api /repos/${{ inputs.repo_owner }}/${{ inputs.repo }}/actions/runs/$RUN_ID/jobs | jq .jobs[0].id)"
         JOB_LOGS="$(gh api /repos/${{ inputs.repo_owner }}/${{ inputs.repo }}/actions/jobs/$JOB_ID/logs)"
-        JOB_URL="https://github.com/${{ inputs.repo_owner }}/${{ inputs.repo }}/actions/runs/$RUN_ID/job/$JOB_ID"
         JOB_LOGS_FAILED=$(gh run --repo ${{ inputs.repo_owner }}/${{ inputs.repo }} view --job $JOB_ID --log-failed)
         WORKING_DIR="${{ inputs.working_directory }}"
         REGEX='(Run gruntwork-io.*Post job cleanup)'
