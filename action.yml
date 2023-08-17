@@ -115,6 +115,7 @@ runs:
       run: echo "::notice ::Completed ${{ inputs.command }} for ${{ inputs.working_directory }} in acct ${{ inputs.account_id }}%0AFor details see https://github.com/${{ inputs.repo_owner }}/${{ inputs.repo }}/actions/runs/${{ steps.return_dispatch.outputs.run_id }}"
 
     - name: Get Job ID & Terragrunt Run URL
+      if: ${{ always() }} # This ensures this step always runs regardless of failure of previous step
       id: jobs_data
       env:
         GH_TOKEN: ${{ inputs.token }}
