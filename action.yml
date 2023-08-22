@@ -160,8 +160,8 @@ runs:
       shell: bash
       run: |
         run_id=${{ steps.return_dispatch.outputs.run_id }}
-        if [[ -z "run_id" ]]; then run_id=${{ steps.return_dispatch_acct_req.outputs.run_id }}; fi
-        if [[ -z "run_id" ]]; then run_id=${{ steps.return_dispatch_acct_add.outputs.run_id }}; fi
+        if [[ -z "$run_id" ]]; then run_id=${{ steps.return_dispatch_acct_req.outputs.run_id }}; fi
+        if [[ -z "$run_id" ]]; then run_id=${{ steps.return_dispatch_acct_add.outputs.run_id }}; fi
         job_id="$(gh api /repos/${{ inputs.repo_owner }}/${{ inputs.repo }}/actions/runs/$run_id/jobs | jq .jobs[0].id)"
         output=$(gh api /repos/${{ inputs.repo_owner }}/${{ inputs.repo }}/actions/jobs/$job_id)
         step_number=$(echo "$output" | jq -r '.steps[] | select(.name == "Run terragrunt").number')
