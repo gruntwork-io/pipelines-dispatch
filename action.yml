@@ -114,6 +114,44 @@ runs:
       shell: bash
       run: echo "::notice ::Completed ${{ inputs.command }} for ${{ inputs.working_directory }} in acct ${{ inputs.account_id }}%0AFor details see https://github.com/${{ inputs.repo_owner }}/${{ inputs.repo }}/actions/runs/${{ steps.return_dispatch.outputs.run_id }}"
 
+    # Await account request
+    - name: Await Acct Req Run ID ${{ steps.return_dispatch_acct_req.outputs.run_id }}
+      if: ${{ always() && inputs.change_type == 'AccountRequested' }}
+      env:
+        GH_TOKEN: ${{ inputs.token}}
+      uses: Codex-/await-remote-run@v1.9.0
+      with:
+        token: ${{ inputs.token}}
+        repo: ${{ inputs.repo }}
+        owner: ${{ inputs.repo_owner }}
+        run_id: ${{ steps.return_dispatch_acct_req.outputs.run_id }}
+        run_timeout_seconds: 3600 # one hour
+        poll_interval_ms: 5000 # Optional
+
+    - name: Completed Acct Req
+      if: ${{ always() && inputs.change_type == 'AccountRequested' }}
+      shell: bash
+      run: echo "::notice ::Completed ${{ inputs.command }} for ${{ inputs.working_directory }} in acct ${{ inputs.account_id }}%0AFor details see https://github.com/${{ inputs.repo_owner }}/${{ inputs.repo }}/actions/runs/${{ steps.return_dispatch_acct_req.outputs.run_id }}"
+
+    # Await account added
+    - name: Await Acct Add Run ID ${{ steps.return_dispatch_acct_add.outputs.run_id }}
+      if: ${{ always() && inputs.change_type == 'AccountAdded' }}
+      env:
+        GH_TOKEN: ${{ inputs.token}}
+      uses: Codex-/await-remote-run@v1.9.0
+      with:
+        token: ${{ inputs.token}}
+        repo: ${{ inputs.repo }}
+        owner: ${{ inputs.repo_owner }}
+        run_id: ${{ steps.return_dispatch_acct_add.outputs.run_id }}
+        run_timeout_seconds: 3600 # one hour
+        poll_interval_ms: 5000 # Optional
+
+    - name: Completed Acct Add
+      if: ${{ always() && inputs.change_type == 'AccountAdded' }}
+      shell: bash
+      run: echo "::notice ::Completed ${{ inputs.command }} for ${{ inputs.working_directory }} in acct ${{ inputs.account_id }}%0AFor details see https://github.com/${{ inputs.repo_owner }}/${{ inputs.repo }}/actions/runs/${{ steps.return_dispatch_acct_add.outputs.run_id }}"
+
     - name: Get Job ID & Terragrunt Run URL
       if: ${{ always() }} # This ensures this step always runs regardless of failure of previous step
       id: jobs_data
@@ -122,6 +160,8 @@ runs:
       shell: bash
       run: |
         run_id=${{ steps.return_dispatch.outputs.run_id }}
+        if [[ -z "$run_id" ]]; then run_id=${{ steps.return_dispatch_acct_req.outputs.run_id }}; fi
+        if [[ -z "$run_id" ]]; then run_id=${{ steps.return_dispatch_acct_add.outputs.run_id }}; fi
         job_id="$(gh api /repos/${{ inputs.repo_owner }}/${{ inputs.repo }}/actions/runs/$run_id/jobs | jq .jobs[0].id)"
         output=$(gh api /repos/${{ inputs.repo_owner }}/${{ inputs.repo }}/actions/jobs/$job_id)
         step_number=$(echo "$output" | jq -r '.steps[] | select(.name == "Run terragrunt").number')
@@ -162,43 +202,5 @@ runs:
         WORKING_DIR="${{ inputs.working_directory }}"
         REGEX='(Run gruntwork-io.*Post job cleanup)'
         if [[ "$JOB_LOGS" =~ $REGEX ]]; then LOGS_OUTPUT=${BASH_REMATCH[1]}; fi
-        ISSUE_BODY="Terragrunt Apply Failed for "$'`'"$WORKING_DIR"$'`\n\n[View logs]('"$JOB_URL"$')'
+        ISSUE_BODY="Terragrunt Apply failed for "$'`'"$WORKING_DIR"$'`\n\n[View logs]('"$JOB_URL"$')'
         if [[ -n "$JOB_LOGS_FAILED" ]]; then gh issue create --title "Terragrunt Apply Failed for $WORKING_DIR" --body "$ISSUE_BODY" --assignee ${{ inputs.actor }}; fi
-
-    # Await account request
-    - name: Await Acct Req Run ID ${{ steps.return_dispatch_acct_req.outputs.run_id }}
-      if: ${{ always() && inputs.change_type == 'AccountRequested' }}
-      env:
-        GH_TOKEN: ${{ inputs.token}}
-      uses: Codex-/await-remote-run@v1.9.0
-      with:
-        token: ${{ inputs.token}}
-        repo: ${{ inputs.repo }}
-        owner: ${{ inputs.repo_owner }}
-        run_id: ${{ steps.return_dispatch_acct_req.outputs.run_id }}
-        run_timeout_seconds: 3600 # one hour
-        poll_interval_ms: 5000 # Optional
-
-    - name: Completed Acct Req
-      if: ${{ always() && inputs.change_type == 'AccountRequested' }}
-      shell: bash
-      run: echo "::notice ::Completed ${{ inputs.command }} for ${{ inputs.working_directory }} in acct ${{ inputs.account_id }}%0AFor details see https://github.com/${{ inputs.repo_owner }}/${{ inputs.repo }}/actions/runs/${{ steps.return_dispatch_acct_req.outputs.run_id }}"
-
-    # Await account added
-    - name: Await Acct Add Run ID ${{ steps.return_dispatch_acct_add.outputs.run_id }}
-      if: ${{ always() && inputs.change_type == 'AccountAdded' }}
-      env:
-        GH_TOKEN: ${{ inputs.token}}
-      uses: Codex-/await-remote-run@v1.9.0
-      with:
-        token: ${{ inputs.token}}
-        repo: ${{ inputs.repo }}
-        owner: ${{ inputs.repo_owner }}
-        run_id: ${{ steps.return_dispatch_acct_add.outputs.run_id }}
-        run_timeout_seconds: 3600 # one hour
-        poll_interval_ms: 5000 # Optional
-
-    - name: Completed Acct Add
-      if: ${{ always() && inputs.change_type == 'AccountAdded' }}
-      shell: bash
-      run: echo "::notice ::Completed ${{ inputs.command }} for ${{ inputs.working_directory }} in acct ${{ inputs.account_id }}%0AFor details see https://github.com/${{ inputs.repo_owner }}/${{ inputs.repo }}/actions/runs/${{ steps.return_dispatch_acct_add.outputs.run_id }}"
