@@ -22,8 +22,11 @@ inputs:
   args:
     description: "The arguments to pass into Terragrunt"
     required: true
-  token:
-    description: "GitHub PAT which has access to your infrastructure-live and infrastructure-pipelines repositories"
+  infra_pipelines_token:
+    description: "GitHub PAT which has access to run GitHub Actions Workflows in your infrastructure-pipelines repository"
+    required: true
+  infra_live_token:
+    description: "GitHub PAT which has access to create issues and PR comments in your infrastructure-live repository"
     required: true
   change_type:
     description: "What type of infrastructure change occurred"
@@ -41,11 +44,11 @@ runs:
     - name: Dispatch an action and get the run ID
       if: ${{ !contains(fromJSON('["AccountRequested", "AccountAdded"]'), inputs.change_type)}}
       env:
-        GH_TOKEN: ${{ inputs.token }}
+        GH_TOKEN: ${{ inputs.infra_pipelines_token }}
       uses: codex-/return-dispatch@v1.10.0
       id: return_dispatch
       with:
-        token: ${{ inputs.token }}
+        token: ${{ inputs.infra_pipelines_token }}
         ref: "refs/heads/main"
         repo: ${{ inputs.repo }}
         owner: ${{ inputs.repo_owner }}
@@ -59,11 +62,11 @@ runs:
     - name: Dispatch an action and get the run ID
       if: ${{ inputs.change_type == 'AccountRequested' }}
       env:
-        GH_TOKEN: ${{ inputs.token }}
+        GH_TOKEN: ${{ inputs.infra_pipelines_token }}
       uses: codex-/return-dispatch@v1.10.0
       id: return_dispatch_acct_req
       with:
-        token: ${{ inputs.token }}
+        token: ${{ inputs.infra_pipelines_token }}
         ref: "refs/heads/main"
         repo: ${{ inputs.repo }}
         owner: ${{ inputs.repo_owner }}
@@ -78,11 +81,11 @@ runs:
     - name: Dispatch an action and get the run ID
       if: ${{ inputs.change_type == 'AccountAdded' }}
       env:
-        GH_TOKEN: ${{ inputs.token }}
+        GH_TOKEN: ${{ inputs.infra_pipelines_token }}
       uses: codex-/return-dispatch@v1.10.0
       id: return_dispatch_acct_add
       with:
-        token: ${{ inputs.token }}
+        token: ${{ inputs.infra_pipelines_token }}
         ref: "refs/heads/main"
         repo: ${{ inputs.repo }}
         owner: ${{ inputs.repo_owner }}
@@ -99,10 +102,10 @@ runs:
     - name: Await Run ID ${{ steps.return_dispatch.outputs.run_id }}
       if: ${{ !contains(fromJSON('["AccountRequested", "AccountAdded"]'), inputs.change_type)}}
       env:
-        GH_TOKEN: ${{ inputs.token}}
+        GH_TOKEN: ${{ inputs.infra_pipelines_token }}
       uses: Codex-/await-remote-run@v1.9.0
       with:
-        token: ${{ inputs.token}}
+        token: ${{ inputs.infra_pipelines_token }}
         repo: ${{ inputs.repo }}
         owner: ${{ inputs.repo_owner }}
         run_id: ${{ steps.return_dispatch.outputs.run_id }}
@@ -112,16 +115,22 @@ runs:
     - name: Completed
       if: ${{ always() && !contains(fromJSON('["AccountRequested", "AccountAdded"]'), inputs.change_type)}}
       shell: bash
-      run: echo "::notice ::Completed ${{ inputs.command }} for ${{ inputs.working_directory }} in acct ${{ inputs.account_id }}%0AFor details see https://github.com/${{ inputs.repo_owner }}/${{ inputs.repo }}/actions/runs/${{ steps.return_dispatch.outputs.run_id }}"
+      env:
+        COMMAND: ${{ inputs.command }}
+        WORKING_DIR: ${{ inputs.working_directory }}
+        ACCOUNT_ID: ${{ inputs.account_id }}
+        REPO: ${{ inputs.repo }}
+        REPO_OWNER: ${{ inputs.repo_owner }}
+      run: echo "::notice ::Completed $COMMAND for $WORKING_DIR in acct $ACC0UNT_ID%0AFor details see https://github.com/$REPO_OWNER/$REPO/actions/runs/${{ steps.return_dispatch.outputs.run_id }}"
 
     # Await account request
     - name: Await Acct Req Run ID ${{ steps.return_dispatch_acct_req.outputs.run_id }}
       if: ${{ always() && inputs.change_type == 'AccountRequested' }}
       env:
-        GH_TOKEN: ${{ inputs.token}}
+        GH_TOKEN: ${{ inputs.infra_pipelines_token }}
       uses: Codex-/await-remote-run@v1.9.0
       with:
-        token: ${{ inputs.token}}
+        token: ${{ inputs.infra_pipelines_token }}
         repo: ${{ inputs.repo }}
         owner: ${{ inputs.repo_owner }}
         run_id: ${{ steps.return_dispatch_acct_req.outputs.run_id }}
@@ -131,16 +140,22 @@ runs:
     - name: Completed Acct Req
       if: ${{ always() && inputs.change_type == 'AccountRequested' }}
       shell: bash
-      run: echo "::notice ::Completed ${{ inputs.command }} for ${{ inputs.working_directory }} in acct ${{ inputs.account_id }}%0AFor details see https://github.com/${{ inputs.repo_owner }}/${{ inputs.repo }}/actions/runs/${{ steps.return_dispatch_acct_req.outputs.run_id }}"
+      env:
+        COMMAND: ${{ inputs.command }}
+        WORKING_DIR: ${{ inputs.working_directory }}
+        ACCOUNT_ID: ${{ inputs.account_id }}
+        REPO: ${{ inputs.repo }}
+        REPO_OWNER: ${{ inputs.repo_owner }}
+      run: echo "::notice ::Completed $COMMAND for $WORKING_DIR in acct $ACCOUNT_ID%0AFor details see https://github.com/$REPO_OWNER/$REPO/actions/runs/${{ steps.return_dispatch_acct_req.outputs.run_id }}"
 
     # Await account added
     - name: Await Acct Add Run ID ${{ steps.return_dispatch_acct_add.outputs.run_id }}
       if: ${{ always() && inputs.change_type == 'AccountAdded' }}
       env:
-        GH_TOKEN: ${{ inputs.token}}
+        GH_TOKEN: ${{ inputs.infra_pipelines_token }}
       uses: Codex-/await-remote-run@v1.9.0
       with:
-        token: ${{ inputs.token}}
+        token: ${{ inputs.infra_pipelines_token }}
         repo: ${{ inputs.repo }}
         owner: ${{ inputs.repo_owner }}
         run_id: ${{ steps.return_dispatch_acct_add.outputs.run_id }}
@@ -156,51 +171,73 @@ runs:
       if: ${{ always() }} # This ensures this step always runs regardless of failure of previous step
       id: jobs_data
       env:
-        GH_TOKEN: ${{ inputs.token }}
+        GH_TOKEN: ${{ inputs.infra_pipelines_token }}
+        REPO: ${{ inputs.repo }}
+        REPO_OWNER: ${{ inputs.repo_owner }}
       shell: bash
       run: |
         run_id=${{ steps.return_dispatch.outputs.run_id }}
         if [[ -z "$run_id" ]]; then run_id=${{ steps.return_dispatch_acct_req.outputs.run_id }}; fi
         if [[ -z "$run_id" ]]; then run_id=${{ steps.return_dispatch_acct_add.outputs.run_id }}; fi
-        job_id="$(gh api /repos/${{ inputs.repo_owner }}/${{ inputs.repo }}/actions/runs/$run_id/jobs | jq .jobs[0].id)"
-        output=$(gh api /repos/${{ inputs.repo_owner }}/${{ inputs.repo }}/actions/jobs/$job_id)
+        job_id="$(gh api /repos/$REPO_OWNER/$REPO/actions/runs/$run_id/jobs | jq .jobs[0].id)"
+        output=$(gh api /repos/$REPO_OWNER/$REPO/actions/jobs/$job_id)
         step_number=$(echo "$output" | jq -r '.steps[] | select(.name == "Run terragrunt").number')
         step_fragment="#step:$step_number:1" # Link to first line of the Run Terragrunt Step
-        job_url="https://github.com/${{ inputs.repo_owner }}/${{ inputs.repo }}/actions/runs/$run_id/job/$job_id$step_fragment"
+        job_url="https://github.com/$REPO_OWNER/$REPO/actions/runs/$run_id/job/$job_id$step_fragment"
         echo "JOB_ID=$job_id" >> "$GITHUB_OUTPUT"
         echo "JOB_URL=$job_url" >> "$GITHUB_OUTPUT"
 
-    - name: Post terragrunt logs as PR comment
+    - name: Retrieve terragrunt logs
       id: get_tg_logs
       if: ${{ always() && contains(inputs.command, 'plan') }}
       env:
-        GH_TOKEN: ${{ inputs.token }}
+        GH_TOKEN: ${{ inputs.infra_pipelines_token }}
         JOB_ID: ${{ steps.jobs_data.outputs.JOB_ID }}
         JOB_URL: ${{ steps.jobs_data.outputs.JOB_URL }}
+        REPO: ${{ inputs.repo }}
+        REPO_OWNER: ${{ inputs.repo_owner }}
+        WORKING_DIR: ${{ inputs.working_directory }}
       shell: bash
       run: |
-        JOB_LOGS="$(gh api /repos/${{ inputs.repo_owner }}/${{ inputs.repo }}/actions/jobs/$JOB_ID/logs)"
-        JOB_LOGS_FAILED=$(gh run --repo ${{ inputs.repo_owner }}/${{ inputs.repo }} view --job $JOB_ID --log-failed)
-        WORKING_DIR="${{ inputs.working_directory }}"
+        JOB_LOGS="$(gh api /repos/$REPO_OWNER/$REPO/actions/jobs/$JOB_ID/logs)"
+        JOB_LOGS_FAILED=$(gh run --repo $REPO_OWNER/$REPO view --job $JOB_ID --log-failed)
         REGEX='(Run gruntwork-io.*Post job cleanup)'
         if [[ "$JOB_LOGS" =~ $REGEX ]]; then LOGS_OUTPUT=${BASH_REMATCH[1]}; fi
         if [[ -z "$JOB_LOGS_FAILED" ]]; then EMOJI=":white_check_mark:"; STATUS="succeeded"; else EMOJI=":x:"; STATUS="failed"; fi
+        echo "working_dir=$WORKING_DIR" >> $GITHUB_OUTPUT
+        echo "emoji=$EMOJI" >> $GITHUB_OUTPUT
+        echo "status=$STATUS" >> $GITHUB_OUTPUT
+        echo "logs_output=$LOGS_OUTPUT" >> $GITHUB_OUTPUT
+        echo "jobs_logs_failed=$JOBS_LOGS_FAILED" >> $GITHUB_OUTPUT
+
+    - name: Post terragrunt logs as PR comment
+      id: post_tg_logs
+      if: ${{ always() && contains(inputs.command, 'plan') }}
+      env:
+        GH_TOKEN: ${{ inputs.infra_live_token }}
+        JOB_ID: ${{ steps.jobs_data.outputs.JOB_ID }}
+        JOB_URL: ${{ steps.jobs_data.outputs.JOB_URL }}
+        WORKING_DIR: ${{ steps.get_tg_logs.outputs.work_dir }}
+        STATUS: ${{ steps.get_tg_logs.outputs.status }}
+        EMOJI: ${{ steps.get_tg_logs.outputs.emoji }}
+        LOGS_OUTPUT: ${{ steps.get_tg_logs.outputs.logs_output }}
+        PR_NUMBER: ${{ github.event.number }}
+      shell: bash
+      run: |
         PR_COMMENT=$'## Terragrunt Plan\n\n'"$EMOJI Terragrunt Plan $STATUS for "$'`'"$WORKING_DIR"$'`\n\n[View logs]('"$JOB_URL"$')'
-        if [[ -n "$LOGS_OUTPUT" ]]; then gh issue comment ${{ github.event.number }} --body "$PR_COMMENT"; fi
+        if [[ -n "$LOGS_OUTPUT" ]]; then gh issue comment $PR_NUMBER --body "$PR_COMMENT"; fi
 
     - name: Post terragrunt logs as GH Issue on apply failure
       id: get_tg_logs_apply
       if: ${{ always() && contains(inputs.command, 'apply') }}
       env:
-        GH_TOKEN: ${{ inputs.token }}
+        GH_TOKEN: ${{ inputs.infra_live_token }}
         JOB_ID: ${{ steps.jobs_data.outputs.JOB_ID }}
         JOB_URL: ${{ steps.jobs_data.outputs.JOB_URL }}
+        WORKING_DIR: ${{ steps.get_tg_logs.outputs.work_dir }}
+        JOBS_LOGS_FAILED: ${{ steps.get_tg_logs.outputs.jobs_logs_failed }}
+        ACTOR: ${{ inputs.actor }}
       shell: bash
       run: |
-        JOB_LOGS="$(gh api /repos/${{ inputs.repo_owner }}/${{ inputs.repo }}/actions/jobs/$JOB_ID/logs)"
-        JOB_LOGS_FAILED=$(gh run --repo ${{ inputs.repo_owner }}/${{ inputs.repo }} view --job $JOB_ID --log-failed)
-        WORKING_DIR="${{ inputs.working_directory }}"
-        REGEX='(Run gruntwork-io.*Post job cleanup)'
-        if [[ "$JOB_LOGS" =~ $REGEX ]]; then LOGS_OUTPUT=${BASH_REMATCH[1]}; fi
         ISSUE_BODY="Terragrunt Apply failed for "$'`'"$WORKING_DIR"$'`\n\n[View logs]('"$JOB_URL"$')'
-        if [[ -n "$JOB_LOGS_FAILED" ]]; then gh issue create --title "Terragrunt Apply Failed for $WORKING_DIR" --body "$ISSUE_BODY" --assignee ${{ inputs.actor }}; fi
+        if [[ -n "$JOB_LOGS_FAILED" ]]; then gh issue create --title "Terragrunt Apply Failed for $WORKING_DIR" --body "$ISSUE_BODY" --assignee $ACTOR; fi
