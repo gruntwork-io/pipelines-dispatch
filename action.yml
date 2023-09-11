@@ -237,5 +237,5 @@ runs:
         ACTOR: ${{ inputs.actor }}
       shell: bash
       run: |
-        ISSUE_BODY="Terragrunt Apply failed for "$'`'"$WORKING_DIR"$'`\n\n[View logs]('"$JOB_URL"$')'
-        gh issue create --title "Terragrunt Apply Failed for $WORKING_DIR" --body "$ISSUE_BODY" --assignee $ACTOR
+        ISSUE_BODY="Terragrunt Apply failed :x: for "$'`'"$WORKING_DIR"$'`\n\n[View logs]('"$JOB_URL"$')'
+        gh issue create --title "Terragrunt Apply failed for $WORKING_DIR" --body "$ISSUE_BODY" --assignee $ACTOR
