@@ -216,7 +216,7 @@ runs:
         GH_TOKEN: ${{ inputs.infra_live_token }}
         JOB_ID: ${{ steps.jobs_data.outputs.JOB_ID }}
         JOB_URL: ${{ steps.jobs_data.outputs.JOB_URL }}
-        WORKING_DIR: ${{ steps.get_tg_logs.outputs.work_dir }}
+        WORKING_DIR: ${{ inputs.working_directory }}
         STATUS: ${{ steps.get_tg_logs.outputs.status }}
         EMOJI: ${{ steps.get_tg_logs.outputs.emoji }}
         LOGS_OUTPUT: ${{ steps.get_tg_logs.outputs.logs_output }}
@@ -233,7 +233,7 @@ runs:
         GH_TOKEN: ${{ inputs.infra_live_token }}
         JOB_ID: ${{ steps.jobs_data.outputs.JOB_ID }}
         JOB_URL: ${{ steps.jobs_data.outputs.JOB_URL }}
-        WORKING_DIR: ${{ steps.get_tg_logs.outputs.work_dir }}
+        WORKING_DIR: ${{ inputs.working_directory }}
         ACTOR: ${{ inputs.actor }}
       shell: bash
       run: |
