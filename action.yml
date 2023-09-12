@@ -208,7 +208,6 @@ runs:
         echo "status=$STATUS" >> $GITHUB_OUTPUT
         echo "logs_output=$LOGS_OUTPUT" >> $GITHUB_OUTPUT
         echo "failed_logs_output=$FAILED_LOGS_OUTPUT" >> $GITHUB_OUTPUT
-        echo "work_dir=$WORKING_DIR" >> $GITHUB_OUTPUT
 
     - name: Post terragrunt logs as PR comment
       id: post_tg_logs
@@ -217,7 +216,7 @@ runs:
         GH_TOKEN: ${{ inputs.infra_live_token }}
         JOB_ID: ${{ steps.jobs_data.outputs.JOB_ID }}
         JOB_URL: ${{ steps.jobs_data.outputs.JOB_URL }}
-        WORKING_DIR: ${{ steps.get_tg_logs.outputs.work_dir }}
+        WORKING_DIR: ${{ inputs.working_directory }}
         STATUS: ${{ steps.get_tg_logs.outputs.status }}
         EMOJI: ${{ steps.get_tg_logs.outputs.emoji }}
         LOGS_OUTPUT: ${{ steps.get_tg_logs.outputs.logs_output }}
@@ -234,7 +233,7 @@ runs:
         GH_TOKEN: ${{ inputs.infra_live_token }}
         JOB_ID: ${{ steps.jobs_data.outputs.JOB_ID }}
         JOB_URL: ${{ steps.jobs_data.outputs.JOB_URL }}
-        WORKING_DIR: ${{ steps.get_tg_logs.outputs.work_dir }}
+        WORKING_DIR: ${{ inputs.working_directory }}
         ACTOR: ${{ inputs.actor }}
       shell: bash
       run: |
