@@ -208,6 +208,7 @@ runs:
         echo "status=$STATUS" >> $GITHUB_OUTPUT
         echo "logs_output=$LOGS_OUTPUT" >> $GITHUB_OUTPUT
         echo "failed_logs_output=$FAILED_LOGS_OUTPUT" >> $GITHUB_OUTPUT
+        echo "work_dir=$WORKING_DIR" >> $GITHUB_OUTPUT
 
     - name: Post terragrunt logs as PR comment
       id: post_tg_logs
