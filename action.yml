@@ -176,58 +176,73 @@ runs:
         REPO_OWNER: ${{ inputs.repo_owner }}
       shell: bash
       run: |
-        run_id=${{ steps.return_dispatch.outputs.run_id }}
-        if [[ -z "$run_id" ]]; then run_id=${{ steps.return_dispatch_acct_req.outputs.run_id }}; fi
-        if [[ -z "$run_id" ]]; then run_id=${{ steps.return_dispatch_acct_add.outputs.run_id }}; fi
-        job_id="$(gh api /repos/$REPO_OWNER/$REPO/actions/runs/$run_id/jobs | jq .jobs[0].id)"
-        output=$(gh api /repos/$REPO_OWNER/$REPO/actions/jobs/$job_id)
-        step_number=$(echo "$output" | jq -r '.steps[] | select(.name | startswith("Run terragrunt")).number')
-        step_fragment="#step:$step_number:1" # Link to first line of the Run Terragrunt Step
-        job_url="https://github.com/$REPO_OWNER/$REPO/actions/runs/$run_id/job/$job_id$step_fragment"
-        echo "JOB_ID=$job_id" >> "$GITHUB_OUTPUT"
-        echo "JOB_URL=$job_url" >> "$GITHUB_OUTPUT"
+        RUN_ID=${{ steps.return_dispatch.outputs.run_id }}
+        if [[ -z "$RUN_ID" ]]; then RUN_ID=${{ steps.return_dispatch_acct_req.outputs.run_id }}; fi
+        if [[ -z "$RUN_ID" ]]; then RUN_ID=${{ steps.return_dispatch_acct_add.outputs.run_id }}; fi
+        JOB_ID="$(gh api /repos/$REPO_OWNER/$REPO/actions/runs/$RUN_ID/jobs | jq .jobs[0].id)"
+        JOB_OUTPUT=$(gh api /repos/$REPO_OWNER/$REPO/actions/jobs/$JOB_ID)
+        STEP_NUMBER=$(echo "$JOB_OUTPUT" | jq -r '.steps[] | select(.name | startswith("Run terragrunt")).number')
+        STEP_FRAGMENT="#step:$STEP_NUMBER:1" # Link to first line of the Run Terragrunt Step
+        TERRAGRUNT_STEP_URL="https://github.com/$REPO_OWNER/$REPO/actions/runs/$RUN_ID/job/$JOB_ID$STEP_FRAGMENT"
+        echo "run_id=$RUN_ID" >> "$GITHUB_OUTPUT"
+        echo "job_id=$JOB_ID" >> "$GITHUB_OUTPUT"
+        echo "terragrunt_step_url=$TERRAGRUNT_STEP_URL" >> "$GITHUB_OUTPUT"
 
-    - name: Retrieve terragrunt logs
-      id: get_tg_logs
-      if: ${{ always() && contains(inputs.command, 'plan') }}
+    - name: Retrieve job run results
+      id: get_job_run_results
+      if: ${{ always() }}
       env:
         GH_TOKEN: ${{ inputs.infra_pipelines_token }}
-        JOB_ID: ${{ steps.jobs_data.outputs.JOB_ID }}
-        JOB_URL: ${{ steps.jobs_data.outputs.JOB_URL }}
+        JOB_ID: ${{ steps.jobs_data.outputs.job_id }}
         REPO: ${{ inputs.repo }}
         REPO_OWNER: ${{ inputs.repo_owner }}
-        WORKING_DIR: ${{ inputs.working_directory }}
       shell: bash
       run: |
-        JOB_LOGS="$(gh api /repos/$REPO_OWNER/$REPO/actions/jobs/$JOB_ID/logs)"
-        JOB_LOGS_FAILED=$(gh run --repo $REPO_OWNER/$REPO view --job $JOB_ID --log-failed)
-        REGEX='(Run gruntwork-io.*Post job cleanup)'
-        if [[ "$JOB_LOGS" =~ $REGEX ]]; then LOGS_OUTPUT="true"; fi
-        if [[ -z "$JOB_LOGS_FAILED" ]]; then FAILED_LOGS_OUTPUT="true"; EMOJI=":white_check_mark:"; STATUS="succeeded"; else EMOJI=":x:"; STATUS="failed"; fi
-        echo "emoji=$EMOJI" >> $GITHUB_OUTPUT
-        echo "status=$STATUS" >> $GITHUB_OUTPUT
-        echo "logs_output=$LOGS_OUTPUT" >> $GITHUB_OUTPUT
-        echo "failed_logs_output=$FAILED_LOGS_OUTPUT" >> $GITHUB_OUTPUT
+        TERRAGRUNT_STEP_STATUS=$(gh run --repo $REPO_OWNER/$REPO view --job $JOB_ID --json jobs | jq -r '.jobs[0].steps[] | select(.name | startswith("Run terragrunt")).conclusion')
+        if [[ "$TERRAGRUNT_STEP_STATUS" == "success" ]]; then TERRAGRUNT_STEP_EMOJI=":white_check_mark:"; TERRAGRUNT_STEP_STATUS="succeeded"; fi
+        if [[ "$TERRAGRUNT_STEP_STATUS" == "failure" ]]; then TERRAGRUNT_STEP_EMOJI=":x:"; TERRAGRUNT_STEP_STATUS="failed"; fi
+        FAILED_STEPS=$(gh run --repo $REPO_OWNER/$REPO view --job $JOB_ID --json jobs | jq -r '.jobs[0].steps[] | select(.name | startswith("Run terragrunt") | not) | select(.conclusion == "failure")')
+        echo "terragrunt_step_status=$TERRAGRUNT_STEP_STATUS" >> $GITHUB_OUTPUT
+        echo "terragrunt_step_emoji=$TERRAGRUNT_STEP_EMOJI" >> $GITHUB_OUTPUT
+        EOF=$(dd if=/dev/urandom bs=15 count=1 status=none | base64)
+        echo "failed_steps<<$EOF" >> $GITHUB_OUTPUT
+        echo "$FAILED_STEPS" >> $GITHUB_OUTPUT
+        echo "$EOF" >> $GITHUB_OUTPUT
 
-    - name: Post terragrunt logs as PR comment
-      id: post_tg_logs
+    - name: Post PR comments
       if: ${{ always() && contains(inputs.command, 'plan') }}
       env:
         GH_TOKEN: ${{ inputs.infra_live_token }}
-        JOB_ID: ${{ steps.jobs_data.outputs.JOB_ID }}
-        JOB_URL: ${{ steps.jobs_data.outputs.JOB_URL }}
+        REPO: ${{ inputs.repo }}
+        REPO_OWNER: ${{ inputs.repo_owner }}
         WORKING_DIR: ${{ inputs.working_directory }}
-        STATUS: ${{ steps.get_tg_logs.outputs.status }}
-        EMOJI: ${{ steps.get_tg_logs.outputs.emoji }}
-        LOGS_OUTPUT: ${{ steps.get_tg_logs.outputs.logs_output }}
+        RUN_ID: ${{ steps.jobs_data.outputs.run_id }}
+        JOB_ID: ${{ steps.jobs_data.outputs.job_id }}
+        TERRAGRUNT_STEP_URL: ${{ steps.jobs_data.outputs.terragrunt_step_url }}
+        TERRAGRUNT_STEP_STATUS: ${{ steps.get_job_run_results.outputs.terragrunt_step_status }}
+        TERRAGRUNT_STEP_EMOJI: ${{ steps.get_job_run_results.outputs.terragrunt_step_emoji }}
+        FAILED_STEPS: ${{ steps.get_job_run_results.outputs.failed_steps }}
         PR_NUMBER: ${{ github.event.number }}
       shell: bash
       run: |
-        PR_COMMENT=$'## Terragrunt Plan\n\n'"$EMOJI Terragrunt Plan $STATUS for "$'`'"$WORKING_DIR"$'`\n\n[View logs]('"$JOB_URL"$')'
-        if [[ -n "$LOGS_OUTPUT" ]]; then gh issue comment $PR_NUMBER --body "$PR_COMMENT"; fi
+        # Post PR comment indicating terragrunt plan success/failure
+        COMMENT_BODY=$'## Terragrunt Plan\n\n'"$TERRAGRUNT_STEP_EMOJI Terragrunt Plan $TERRAGRUNT_STEP_STATUS for "$'`'"$WORKING_DIR"$'`\n\n[View logs]('"$TERRAGRUNT_STEP_URL"$')'
+        if [[ -n "$TERRAGRUNT_STEP_STATUS" ]]; then gh issue comment $PR_NUMBER --body "$COMMENT_BODY"; fi
 
-    - name: Post terragrunt logs as GH Issue on apply failure
-      id: get_tg_logs_apply
+        # If steps other than terragrunt plan failed, post PR comment about a pipeline failure.
+        # Include links to each of the failed steps.
+        if [[ -n "$FAILED_STEPS" ]]; then
+          readarray -t FAILED_STEP_NUMBERS < <(echo $FAILED_STEPS | jq -r .number)
+          readarray -t FAILED_STEP_NAMES < <(echo $FAILED_STEPS | jq -r .name)
+          COMMENT_BODY=$'## Pipelines Run Failed\n\n:x: Pipelines run failed for `'"$WORKING_DIR"$'`.\n\nInspect the logs associated with each of the following failures to learn the details of each failure:\n\n'
+          for i in "${!FAILED_STEP_NUMBERS[@]}"; do
+            LINK=$'- ['"${FAILED_STEP_NAMES[$i]}"$']('"https://github.com/$REPO_OWNER/$REPO/actions/runs/$RUN_ID/job/$JOB_ID"$'#step:'"${FAILED_STEP_NUMBERS[$i]}"$':1)'
+            COMMENT_BODY="$COMMENT_BODY""$LINK"$'\n'
+          done
+          gh issue comment $PR_NUMBER --body "$COMMENT_BODY"
+        fi
+
+    - name: Open GH Issue on apply failure
       if: ${{ always() && contains(inputs.command, 'apply') && steps.get_tg_logs.outputs.failed_logs_output != null }}
       env:
         GH_TOKEN: ${{ inputs.infra_live_token }}
