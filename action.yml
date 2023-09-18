@@ -224,9 +224,9 @@ runs:
       shell: bash
       run: |
         if [ $STATUS = 'succeeded' ]; then
-          COPY="To apply these changes, merge this PR."
+          COPY="To apply these changes, merge this pull request."
         else
-          COPY="Inspect the attached logs, triage the issue, make any required changes, then push changes to this PR."
+          COPY="Inspect the attached logs, triage the issue, make any required changes, then push changes to this pull request."
         fi
 
         PR_COMMENT=$'## Terragrunt Plan\n\n'"$EMOJI Terragrunt Plan $STATUS for "$'`'"$WORKING_DIR"$'`\n\n[View logs]('"$JOB_URL"$')\n\n '"$COPY"$''
@@ -243,5 +243,5 @@ runs:
         ACTOR: ${{ inputs.actor }}
       shell: bash
       run: |
-        ISSUE_BODY="Terragrunt Apply failed :x: for "$'`'"$WORKING_DIR"$'`\n\n[View logs]('"$JOB_URL"$')\n\n Inspect the attached logs, triage the issue, then create a new Pull Request with the required changes.'
+        ISSUE_BODY="Terragrunt Apply failed :x: for "$'`'"$WORKING_DIR"$'`\n\n[View logs]('"$JOB_URL"$')\n\n Inspect the attached logs, triage the issue, then create a new pull request with the required changes.'
         gh issue create --title "Terragrunt Apply failed for $WORKING_DIR" --body "$ISSUE_BODY" --assignee $ACTOR
