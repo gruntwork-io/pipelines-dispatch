@@ -229,7 +229,7 @@ runs:
           COPY="Inspect the attached logs, triage the issue, make any required changes, then push changes to this PR."
         fi
 
-        PR_COMMENT=$'## Terragrunt Plan\n\n'"$EMOJI Terragrunt Plan $STATUS for "$'`'"$WORKING_DIR"$'`\n\n[View logs]('"$JOB_URL"$')\n\n '"$COPY"''
+        PR_COMMENT=$'## Terragrunt Plan\n\n'"$EMOJI Terragrunt Plan $STATUS for "$'`'"$WORKING_DIR"$'`\n\n[View logs]('"$JOB_URL"$')\n\n '"$COPY"$''
         if [[ -n "$LOGS_OUTPUT" ]]; then gh issue comment $PR_NUMBER --body "$PR_COMMENT"; fi
 
     - name: Post terragrunt logs as GH Issue on apply failure
