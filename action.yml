@@ -229,7 +229,7 @@ runs:
           COPY="Inspect the attached logs, triage the issue, make any required changes, then push changes to this pull request."
         fi
 
-        PR_COMMENT=$'## Terragrunt Plan\n\n'"$EMOJI Terragrunt Plan $STATUS for "$'`'"$WORKING_DIR"$'`\n\n '"$COPY"$'\n\n[View logs]('"$JOB_URL"$')\n\n'
+        PR_COMMENT=$'## Terragrunt Plan\n\n'"$EMOJI Terragrunt Plan $STATUS for "$'`'"$WORKING_DIR"$'`.\n\n '"$COPY"$'\n\n[View logs]('"$JOB_URL"$')\n\n'
         if [[ -n "$LOGS_OUTPUT" ]]; then gh issue comment $PR_NUMBER --body "$PR_COMMENT"; fi
 
     - name: Post terragrunt logs as GH Issue on apply failure
@@ -243,5 +243,5 @@ runs:
         ACTOR: ${{ inputs.actor }}
       shell: bash
       run: |
-        ISSUE_BODY="Terragrunt Apply failed :x: for "$'`'"$WORKING_DIR"$'`\n\n Inspect the attached logs, triage the issue, then create a new pull request with the required changes.\n\n[View logs]('"$JOB_URL"$')'
+        ISSUE_BODY="Terragrunt Apply failed :x: for "$'`'"$WORKING_DIR"$'`.\n\n Inspect the attached logs, triage the issue, then create a new pull request with the required changes.\n\n[View logs]('"$JOB_URL"$')'
         gh issue create --title "Terragrunt Apply failed for $WORKING_DIR" --body "$ISSUE_BODY" --assignee $ACTOR
