@@ -249,7 +249,7 @@ runs:
         fi
 
     - name: Open GH Issue on apply failure
-      if: ${{ always() && contains(inputs.command, 'apply') && steps.get_tg_logs.outputs.failed_logs_output != null }}
+      if: ${{ always() && contains(inputs.command, 'apply') && steps.get_job_run_results.outputs.failed_steps != null }}
       env:
         GH_TOKEN: ${{ inputs.infra_live_token }}
         JOB_ID: ${{ steps.jobs_data.outputs.JOB_ID }}
