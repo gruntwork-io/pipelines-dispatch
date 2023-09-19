@@ -225,7 +225,7 @@ runs:
         PR_NUMBER: ${{ github.event.number }}
       shell: bash
       run: |
-        if [ $STATUS = 'succeeded' ]; then
+        if [ $TERRAGRUNT_STEP_STATUS = 'succeeded' ]; then
           COPY="To apply these changes, merge this pull request."
         else
           COPY="Inspect the attached logs, triage the issue, make any required changes, then push changes to this pull request to run another plan."
