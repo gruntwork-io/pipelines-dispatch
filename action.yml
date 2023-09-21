@@ -311,6 +311,6 @@ runs:
         PR_NUMBER: ${{ steps.get_pr_number.outputs.get_pr_number }}
       shell: bash
       run: |
-        ISSUE_BODY="Terragrunt Apply failed :x: for "$'`'"$WORKING_DIR"$'` when applying changes requested in PR #$PR_NUMBER.\n\n _Inspect the attached logs, triage the issue, then create a new pull request with the required changes._\n\n[View logs]('"$JOB_URL"$')'
+        ISSUE_BODY=":x: Terragrunt Apply failed for "$'`'"$WORKING_DIR"$'` when applying changes requested in PR #$PR_NUMBER.\n\n _Inspect the attached logs, triage the issue, then create a new pull request with the required changes._\n\n[View logs]('"$JOB_URL"$')'
         gh issue create --title "Terragrunt Apply failed for $WORKING_DIR" --body "$ISSUE_BODY" --assignee $ACTOR
 
