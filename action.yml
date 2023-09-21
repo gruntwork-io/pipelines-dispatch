@@ -249,15 +249,17 @@ runs:
         fi
 
     - name: Get requesting PR number
-        id: get_pr_number
-        # Only try this if we've actually created the account
-        if: ${{ always() && contains(inputs.command, 'apply')
-        working-directory: infrastructure-live
-        env:
-          COMMIT_SHA: ${{ inputs.branch }}
-        run: |
-          echo PR_NUMBER=$gh pr list --search $COMMIT_SHA --state merged --json number | jq '.[].number')
-          echo "pr_number=$PR_NUMBER" >> $GITHUB_OUTPUT
+      id: get_pr_number
+      # Only try this if we've done an apply, which means the PR has been merged
+      if: ${{ always() && contains(inputs.command, 'apply') }}
+      working-directory: infrastructure-live
+      shell: bash
+      env:
+        GH_TOKEN: ${{ inputs.infra_live_token }}
+        COMMIT_SHA: ${{ inputs.branch }}
+      run: |
+        PR_NUMBER=$(gh pr list --search $COMMIT_SHA --state merged --json number | jq '.[].number')
+        echo "pr_number=$PR_NUMBER" >> $GITHUB_OUTPUT
 
     - name: Post PR comments on apply
       if: ${{ always() && contains(inputs.command, 'apply') }}
@@ -278,14 +280,14 @@ runs:
         if [ $TERRAGRUNT_STEP_STATUS = 'succeeded' ]; then
           COPY=""
         else
-          COPY="_Inspect the attached logs, triage the issue, make any required changes, then create a new pull request with the required changes._"
+          COPY="_Inspect the attached logs, triage the issue, make any required changes, then create a new pull request with the required changes._ \n\n"
         fi
 
-        # Post PR comment indicating terragrunt plan success/failure
-        COMMENT_BODY=$'## Terragrunt Plan\n\n'"$TERRAGRUNT_STEP_EMOJI Terragrunt Plan $TERRAGRUNT_STEP_STATUS for "$'`'"$WORKING_DIR"$'`.\n\n '"$COPY"$'\n\n[View logs]('"$TERRAGRUNT_STEP_URL"$')'
+        # Post PR comment indicating terragrunt apply success/failure
+        COMMENT_BODY=$'## Terragrunt Apply\n\n'"$TERRAGRUNT_STEP_EMOJI Terragrunt Apply $TERRAGRUNT_STEP_STATUS for "$'`'"$WORKING_DIR"$'`.\n\n '"$COPY"$[View logs]('"$TERRAGRUNT_STEP_URL"$')'
         if [[ -n "$TERRAGRUNT_STEP_STATUS" ]]; then gh issue comment $PR_NUMBER --body "$COMMENT_BODY"; fi
 
-        # If steps other than terragrunt plan failed, post PR comment about a pipeline failure.
+        # If steps other than terragrunt apply failed, post PR comment about a pipeline failure.
         # Include links to each of the failed steps.
         if [[ -n "$FAILED_STEPS" ]]; then
           readarray -t FAILED_STEP_NUMBERS < <(echo $FAILED_STEPS | jq -r .number)
