@@ -226,9 +226,9 @@ runs:
       shell: bash
       run: |
         if [ $TERRAGRUNT_STEP_STATUS = 'succeeded' ]; then
-          COPY="To apply these changes, merge this pull request."
+          COPY="_To **apply** all changes, merge this pull request._"
         else
-          COPY="Inspect the attached logs, triage the issue, make any required changes, then push changes to this pull request to run another plan."
+          COPY="_To **re-run** the plan, push a new set of changes to this pull request’s branch._"
         fi
 
         # Post PR comment indicating terragrunt plan success/failure
@@ -258,5 +258,5 @@ runs:
         ACTOR: ${{ inputs.actor }}
       shell: bash
       run: |
-        ISSUE_BODY="Terragrunt Apply failed :x: for "$'`'"$WORKING_DIR"$'`.\n\n Inspect the attached logs, triage the issue, then create a new pull request with the required changes.\n\n[View logs]('"$JOB_URL"$')'
+        ISSUE_BODY="Terragrunt Apply failed :x: for "$'`'"$WORKING_DIR"$'`.\n\n _Inspect the attached logs, triage the issue, then create a new pull request with the required changes._\n\n[View logs]('"$JOB_URL"$')'
         gh issue create --title "Terragrunt Apply failed for $WORKING_DIR" --body "$ISSUE_BODY" --assignee $ACTOR
