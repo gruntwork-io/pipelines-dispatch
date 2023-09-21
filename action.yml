@@ -228,7 +228,7 @@ runs:
         if [ $TERRAGRUNT_STEP_STATUS = 'succeeded' ]; then
           COPY="_To **apply** all changes, merge this pull request._"
         else
-          COPY="_Inspect the attached logs, triage the issue, make any required changes, then push changes to this pull request to run another plan._"
+          COPY="_To **re-run** the plan, push a new set of changes to this pull request’s branch._"
         fi
 
         # Post PR comment indicating terragrunt plan success/failure
