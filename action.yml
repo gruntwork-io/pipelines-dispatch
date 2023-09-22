@@ -277,13 +277,13 @@ runs:
       shell: bash
       run: |
         if [ $TERRAGRUNT_STEP_STATUS = 'succeeded' ]; then
-          COPY="_**Apply** ran on main branch as a result of this pull request being merged._ \n\n"
+          COPY="_**Apply** ran on main branch as a result of this pull request being merged._"
         else
-          COPY="_To recover from the failure, check the logs, push any required changes to a new branch, then create a new pull request._ \n\n"
+          COPY="_To recover from the failure, check the logs, push any required changes to a new branch, then create a new pull request._"
         fi
 
         # Post PR comment indicating terragrunt apply success/failure
-        COMMENT_BODY=$'## Terragrunt Apply\n\n'"$TERRAGRUNT_STEP_EMOJI Terragrunt Apply $TERRAGRUNT_STEP_STATUS for "$'`'"$WORKING_DIR"$'`.\n\n '"$COPY"$'[View logs]('"$TERRAGRUNT_STEP_URL"$')'
+        COMMENT_BODY=$'## Terragrunt Apply\n\n'"$TERRAGRUNT_STEP_EMOJI Terragrunt Apply $TERRAGRUNT_STEP_STATUS for "$'`'"$WORKING_DIR"$'`.\n\n '"$COPY"$'\n\n[View logs]('"$TERRAGRUNT_STEP_URL"$')'
         if [[ -n "$TERRAGRUNT_STEP_STATUS" ]]; then gh issue comment $PR_NUMBER --body "$COMMENT_BODY"; fi
 
         # If steps other than terragrunt apply failed, post PR comment about a pipeline failure.
