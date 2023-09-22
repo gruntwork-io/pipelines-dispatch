@@ -181,7 +181,7 @@ runs:
         if [[ -z "$RUN_ID" ]]; then RUN_ID=${{ steps.return_dispatch_acct_add.outputs.run_id }}; fi
         JOB_ID="$(gh api /repos/$REPO_OWNER/$REPO/actions/runs/$RUN_ID/jobs | jq .jobs[0].id)"
         JOB_OUTPUT=$(gh api /repos/$REPO_OWNER/$REPO/actions/jobs/$JOB_ID)
-        STEP_NUMBER=$(echo $JOB_OUTPUT" | jq -c '[.steps[] | select(.name | startswith("Run terragrunt")).number] | last')
+        STEP_NUMBER=$(echo "$JOB_OUTPUT" | jq -c '[.steps[] | select(.name | startswith("Run terragrunt")).number] | last')
         STEP_FRAGMENT="#step:$STEP_NUMBER:1" # Link to first line of the Run Terragrunt Step
         TERRAGRUNT_STEP_URL="https://github.com/$REPO_OWNER/$REPO/actions/runs/$RUN_ID/job/$JOB_ID$STEP_FRAGMENT"
         echo "run_id=$RUN_ID" >> "$GITHUB_OUTPUT"
