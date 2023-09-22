@@ -252,7 +252,6 @@ runs:
       id: get_pr_number
       # Only try this if we've done an apply, which means the PR has been merged
       if: ${{ always() && contains(inputs.command, 'apply') }}
-      working-directory: infrastructure-live
       shell: bash
       env:
         GH_TOKEN: ${{ inputs.infra_live_token }}
