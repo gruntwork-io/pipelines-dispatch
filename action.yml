@@ -198,9 +198,9 @@ runs:
         REPO_OWNER: ${{ inputs.repo_owner }}
       shell: bash
       run: |
-        TERRAGRUNT_STEP_STATUS=$(gh run --repo $REPO_OWNER/$REPO view --job $JOB_ID --json jobs | jq -r '.jobs[0].steps[] | select(.name | startswith("Run terragrunt")).conclusion')
-        if [[ "$TERRAGRUNT_STEP_STATUS" == "success" ]]; then TERRAGRUNT_STEP_EMOJI=":white_check_mark:"; TERRAGRUNT_STEP_STATUS="succeeded"; fi
-        if [[ "$TERRAGRUNT_STEP_STATUS" == "failure" ]]; then TERRAGRUNT_STEP_EMOJI=":x:"; TERRAGRUNT_STEP_STATUS="failed"; fi
+        TERRAGRUNT_SUCCESS=$(gh run --repo $REPO_OWNER/$REPO view --job $JOB_ID --json jobs | jq -r '[.jobs[0].steps[] | select(.name | startswith("Run terragrunt")).conclusion] | all(.[] == "success"; .)')
+        if [[ "$TERRAGRUNT_SUCCESS" == "true" ]]; then TERRAGRUNT_STEP_EMOJI=":white_check_mark:"; TERRAGRUNT_STEP_STATUS="succeeded"; fi
+        if [[ "$TERRAGRUNT_SUCCESS" == "false" ]]; then TERRAGRUNT_STEP_EMOJI=":x:"; TERRAGRUNT_STEP_STATUS="failed"; fi
         FAILED_STEPS=$(gh run --repo $REPO_OWNER/$REPO view --job $JOB_ID --json jobs | jq -r '.jobs[0].steps[] | select(.name | startswith("Run terragrunt") | not) | select(.conclusion == "failure")')
         echo "terragrunt_step_status=$TERRAGRUNT_STEP_STATUS" >> $GITHUB_OUTPUT
         echo "terragrunt_step_emoji=$TERRAGRUNT_STEP_EMOJI" >> $GITHUB_OUTPUT
