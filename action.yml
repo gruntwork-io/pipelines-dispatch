@@ -226,7 +226,7 @@ runs:
       shell: bash
       run: |
         if [ $TERRAGRUNT_STEP_STATUS = 'succeeded' ]; then
-          COPY="_To **apply** all changes, merge this pull request."$'\n'"On merge, another comment will be added to this pull request with apply logs._"
+          COPY="_To **apply** all changes, merge this pull request._"$'\n'"_On merge, another comment will be added to this pull request with apply logs._"
         else
           COPY="_To **re-run** the plan, push a new set of changes to this pull request’s branch._"
         fi
