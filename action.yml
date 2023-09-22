@@ -273,9 +273,11 @@ runs:
         TERRAGRUNT_STEP_STATUS: ${{ steps.get_job_run_results.outputs.terragrunt_step_status }}
         TERRAGRUNT_STEP_EMOJI: ${{ steps.get_job_run_results.outputs.terragrunt_step_emoji }}
         FAILED_STEPS: ${{ steps.get_job_run_results.outputs.failed_steps }}
-        PR_NUMBER: ${{ steps.get_pr_number.outputs.get_pr_number }}
+        PR_NUMBER: ${{ steps.get_pr_number.outputs.pr_number }}
       shell: bash
       run: |
+        echo "$PR_NUMBER"
+
         if [ $TERRAGRUNT_STEP_STATUS = 'succeeded' ]; then
           COPY=""
         else
