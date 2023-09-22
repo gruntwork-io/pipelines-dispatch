@@ -276,10 +276,8 @@ runs:
         PR_NUMBER: ${{ steps.get_pr_number.outputs.pr_number }}
       shell: bash
       run: |
-        echo "$PR_NUMBER"
-
         if [ $TERRAGRUNT_STEP_STATUS = 'succeeded' ]; then
-          COPY=""
+          COPY="_**Apply** ran on main branch as a result of this pull request being merged._ \n\n"
         else
           COPY="_To recover from the failure, check the logs, push any required changes to a new branch, then create a new pull request._ \n\n"
         fi
