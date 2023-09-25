@@ -277,7 +277,7 @@ runs:
       shell: bash
       run: |
         if [ $TERRAGRUNT_STEP_STATUS = 'succeeded' ]; then
-          COPY="_**Apply** ran on the \`main\` branch as a result of this pull request being merged._"
+          COPY="_**Apply** ran on the \`${{ github.ref_name }}\` branch after this pull request was merged._"
         else
           COPY="_To recover from the failure, check the logs, push any required changes to a new branch, then create a new pull request._"
         fi
