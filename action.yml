@@ -56,7 +56,7 @@ runs:
         workflow_inputs: '{
           "account": "${{ inputs.account_id }}",
           "branch": "${{ inputs.branch }}",
-          "infra_live_repo": "${{ vars.GITHUB_REPOSITORY }}",
+          "infra_live_repo": "${{ github.repository }}",
           "working_directory": "${{ inputs.working_directory }}",
           "terragrunt_command": "${{ inputs.command }} ${{ inputs.args }}"
           }'
@@ -76,7 +76,7 @@ runs:
           "management_account": "${{ inputs.account_id }}",
           "new_account_name": "${{ fromJSON(inputs.additional_data).AccountName }}",
           "branch": "${{ inputs.branch }}",
-          "infra_live_repo": "${{ vars.GITHUB_REPOSITORY }}",
+          "infra_live_repo": "${{ github.repository }}",
           "working_directory": "${{ inputs.working_directory }}",
           "terragrunt_command": "${{ inputs.command }} ${{ inputs.args }}"
           }'
@@ -96,7 +96,7 @@ runs:
           "management_account": "${{ inputs.account_id }}",
           "child_account": "${{ fromJSON(inputs.additional_data).ChildAccountId }}",
           "branch": "${{ inputs.branch }}",
-          "infra_live_repo": "${{ vars.GITHUB_REPOSITORY }}",
+          "infra_live_repo": "${{ github.repository }}",
           "working_directory": "${{ inputs.working_directory }}",
           "terragrunt_command": "${{ inputs.command }} ${{ inputs.args }}"
           }'
