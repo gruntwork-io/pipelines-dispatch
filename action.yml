@@ -181,7 +181,7 @@ runs:
         if [[ -z "$RUN_ID" ]]; then RUN_ID=${{ steps.return_dispatch_acct_add.outputs.run_id }}; fi
         JOB_ID="$(gh api /repos/$REPO_OWNER/$REPO/actions/runs/$RUN_ID/jobs | jq .jobs[0].id)"
         JOB_OUTPUT=$(gh api /repos/$REPO_OWNER/$REPO/actions/jobs/$JOB_ID)
-        STEP_NUMBER=$(echo "$JOB_OUTPUT" | jq -r '.steps[] | select(.name | startswith("Run terragrunt")).number')
+        STEP_NUMBER=$(echo "$JOB_OUTPUT" | jq -c '[.steps[] | select(.name | startswith("Run terragrunt")).number] | last')
         STEP_FRAGMENT="#step:$STEP_NUMBER:1" # Link to first line of the Run Terragrunt Step
         TERRAGRUNT_STEP_URL="https://github.com/$REPO_OWNER/$REPO/actions/runs/$RUN_ID/job/$JOB_ID$STEP_FRAGMENT"
         echo "run_id=$RUN_ID" >> "$GITHUB_OUTPUT"
@@ -198,9 +198,9 @@ runs:
         REPO_OWNER: ${{ inputs.repo_owner }}
       shell: bash
       run: |
-        TERRAGRUNT_STEP_STATUS=$(gh run --repo $REPO_OWNER/$REPO view --job $JOB_ID --json jobs | jq -r '.jobs[0].steps[] | select(.name | startswith("Run terragrunt")).conclusion')
-        if [[ "$TERRAGRUNT_STEP_STATUS" == "success" ]]; then TERRAGRUNT_STEP_EMOJI=":white_check_mark:"; TERRAGRUNT_STEP_STATUS="succeeded"; fi
-        if [[ "$TERRAGRUNT_STEP_STATUS" == "failure" ]]; then TERRAGRUNT_STEP_EMOJI=":x:"; TERRAGRUNT_STEP_STATUS="failed"; fi
+        TERRAGRUNT_SUCCESS=$(gh run --repo $REPO_OWNER/$REPO view --job $JOB_ID --json jobs | jq -r '[.jobs[0].steps[] | select(.name | startswith("Run terragrunt")).conclusion] | all(.[] == "success"; .)')
+        if [[ "$TERRAGRUNT_SUCCESS" == "true" ]]; then TERRAGRUNT_STEP_EMOJI=":white_check_mark:"; TERRAGRUNT_STEP_STATUS="succeeded"; fi
+        if [[ "$TERRAGRUNT_SUCCESS" == "false" ]]; then TERRAGRUNT_STEP_EMOJI=":x:"; TERRAGRUNT_STEP_STATUS="failed"; fi
         FAILED_STEPS=$(gh run --repo $REPO_OWNER/$REPO view --job $JOB_ID --json jobs | jq -r '.jobs[0].steps[] | select(.name | startswith("Run terragrunt") | not) | select(.conclusion == "failure")')
         echo "terragrunt_step_status=$TERRAGRUNT_STEP_STATUS" >> $GITHUB_OUTPUT
         echo "terragrunt_step_emoji=$TERRAGRUNT_STEP_EMOJI" >> $GITHUB_OUTPUT
@@ -226,7 +226,7 @@ runs:
       shell: bash
       run: |
         if [ $TERRAGRUNT_STEP_STATUS = 'succeeded' ]; then
-          COPY="_To **apply** all changes, merge this pull request._"
+          COPY="_To **apply** all changes, merge this pull request._"$'\n'"_On merge, another comment will be added to this pull request with apply logs._"
         else
           COPY="_To **re-run** the plan, push a new set of changes to this pull request’s branch._"
         fi
@@ -248,6 +248,57 @@ runs:
           gh issue comment $PR_NUMBER --body "$COMMENT_BODY"
         fi
 
+    - name: Get requesting PR number
+      id: get_pr_number
+      # Only try this if we've done an apply, which means the PR has been merged
+      if: ${{ always() && contains(inputs.command, 'apply') }}
+      shell: bash
+      env:
+        GH_TOKEN: ${{ inputs.infra_live_token }}
+        COMMIT_SHA: ${{ inputs.branch }}
+      run: |
+        PR_NUMBER=$(gh pr list --search $COMMIT_SHA --state merged --json number | jq '.[].number')
+        echo "pr_number=$PR_NUMBER" >> $GITHUB_OUTPUT
+
+    - name: Post PR comments on apply
+      if: ${{ always() && contains(inputs.command, 'apply') }}
+      env:
+        GH_TOKEN: ${{ inputs.infra_live_token }}
+        REPO: ${{ inputs.repo }}
+        REPO_OWNER: ${{ inputs.repo_owner }}
+        WORKING_DIR: ${{ inputs.working_directory }}
+        RUN_ID: ${{ steps.jobs_data.outputs.run_id }}
+        JOB_ID: ${{ steps.jobs_data.outputs.job_id }}
+        TERRAGRUNT_STEP_URL: ${{ steps.jobs_data.outputs.terragrunt_step_url }}
+        TERRAGRUNT_STEP_STATUS: ${{ steps.get_job_run_results.outputs.terragrunt_step_status }}
+        TERRAGRUNT_STEP_EMOJI: ${{ steps.get_job_run_results.outputs.terragrunt_step_emoji }}
+        FAILED_STEPS: ${{ steps.get_job_run_results.outputs.failed_steps }}
+        PR_NUMBER: ${{ steps.get_pr_number.outputs.pr_number }}
+      shell: bash
+      run: |
+        if [ $TERRAGRUNT_STEP_STATUS = 'succeeded' ]; then
+          COPY="_**Apply** ran on the \`${{ github.ref_name }}\` branch after this pull request was merged._"
+        else
+          COPY="_To recover from the failure, check the logs, push any required changes to a new branch, then create a new pull request._"
+        fi
+
+        # Post PR comment indicating terragrunt apply success/failure
+        COMMENT_BODY=$'## Terragrunt Apply\n\n'"$TERRAGRUNT_STEP_EMOJI Terragrunt Apply $TERRAGRUNT_STEP_STATUS for "$'`'"$WORKING_DIR"$'`.\n\n '"$COPY"$'\n\n[View logs]('"$TERRAGRUNT_STEP_URL"$')'
+        if [[ -n "$TERRAGRUNT_STEP_STATUS" ]]; then gh issue comment $PR_NUMBER --body "$COMMENT_BODY"; fi
+
+        # If steps other than terragrunt apply failed, post PR comment about a pipeline failure.
+        # Include links to each of the failed steps.
+        if [[ -n "$FAILED_STEPS" ]]; then
+          readarray -t FAILED_STEP_NUMBERS < <(echo $FAILED_STEPS | jq -r .number)
+          readarray -t FAILED_STEP_NAMES < <(echo $FAILED_STEPS | jq -r .name)
+          COMMENT_BODY=$'## Pipelines Run Failed\n\n:x: Pipelines run failed for `'"$WORKING_DIR"$'`.\n\nInspect the logs associated with each of the following failures to learn the details of each failure:\n\n'
+          for i in "${!FAILED_STEP_NUMBERS[@]}"; do
+            LINK=$'- ['"${FAILED_STEP_NAMES[$i]}"$']('"https://github.com/$REPO_OWNER/$REPO/actions/runs/$RUN_ID/job/$JOB_ID"$'#step:'"${FAILED_STEP_NUMBERS[$i]}"$':1)'
+            COMMENT_BODY="$COMMENT_BODY""$LINK"$'\n'
+          done
+          gh issue comment $PR_NUMBER --body "$COMMENT_BODY"
+        fi
+
     - name: Open GH Issue on apply failure
       if: ${{ always() && contains(inputs.command, 'apply') && steps.get_job_run_results.outputs.failed_steps != null }}
       env:
@@ -256,7 +307,9 @@ runs:
         JOB_URL: ${{ steps.jobs_data.outputs.JOB_URL }}
         WORKING_DIR: ${{ inputs.working_directory }}
         ACTOR: ${{ inputs.actor }}
+        PR_NUMBER: ${{ steps.get_pr_number.outputs.get_pr_number }}
       shell: bash
       run: |
-        ISSUE_BODY="Terragrunt Apply failed :x: for "$'`'"$WORKING_DIR"$'`.\n\n _Inspect the attached logs, triage the issue, then create a new pull request with the required changes._\n\n[View logs]('"$JOB_URL"$')'
+        ISSUE_BODY=":x: Terragrunt Apply failed for "$'`'"$WORKING_DIR"$'` when applying changes requested in PR #$PR_NUMBER.\n\n _Inspect the attached logs, triage the issue, then create a new pull request with the required changes._\n\n[View logs]('"$JOB_URL"$')'
         gh issue create --title "Terragrunt Apply failed for $WORKING_DIR" --body "$ISSUE_BODY" --assignee $ACTOR
+
