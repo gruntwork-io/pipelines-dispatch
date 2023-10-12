@@ -61,7 +61,7 @@ runs:
           "branch": "${{ inputs.branch }}",
           "infra_live_repo": "${{ github.repository }}",
           "working_directory": "${{ inputs.working_directory }}",
-          "terragrunt_command": "${{ inputs.command }} ${{ inputs.args }}"
+          "terragrunt_command": "${{ inputs.command }} ${{ inputs.args }}",
           "pipelines_cli_version": "${{ inputs.pipelines_cli_version }}"
           }'
     - name: Dispatch an action and get the run ID
@@ -82,7 +82,7 @@ runs:
           "branch": "${{ inputs.branch }}",
           "infra_live_repo": "${{ github.repository }}",
           "working_directory": "${{ inputs.working_directory }}",
-          "terragrunt_command": "${{ inputs.command }} ${{ inputs.args }}"
+          "terragrunt_command": "${{ inputs.command }} ${{ inputs.args }}",
           "pipelines_cli_version": "${{ inputs.pipelines_cli_version }}"
           }'
     - name: Dispatch an action and get the run ID
@@ -103,7 +103,7 @@ runs:
           "branch": "${{ inputs.branch }}",
           "infra_live_repo": "${{ github.repository }}",
           "working_directory": "${{ inputs.working_directory }}",
-          "terragrunt_command": "${{ inputs.command }} ${{ inputs.args }}"
+          "terragrunt_command": "${{ inputs.command }} ${{ inputs.args }}",
           "pipelines_cli_version": "${{ inputs.pipelines_cli_version }}"
           }'
 
