@@ -37,6 +37,9 @@ inputs:
   actor:
     description: "The github actor responsible for the change"
     required: true
+  pipelines_cli_version:
+    description: The version of the Gruntwork Pipelines CLI to use
+    required: true
 
 runs:
   using: "composite"
@@ -59,6 +62,7 @@ runs:
           "infra_live_repo": "${{ github.repository }}",
           "working_directory": "${{ inputs.working_directory }}",
           "terragrunt_command": "${{ inputs.command }} ${{ inputs.args }}"
+          "pipelines_cli_version": "${{ inputs.pipelines_cli_version }}"
           }'
     - name: Dispatch an action and get the run ID
       if: ${{ inputs.change_type == 'AccountRequested' }}
@@ -79,6 +83,7 @@ runs:
           "infra_live_repo": "${{ github.repository }}",
           "working_directory": "${{ inputs.working_directory }}",
           "terragrunt_command": "${{ inputs.command }} ${{ inputs.args }}"
+          "pipelines_cli_version": "${{ inputs.pipelines_cli_version }}"
           }'
     - name: Dispatch an action and get the run ID
       if: ${{ inputs.change_type == 'AccountAdded' }}
@@ -99,6 +104,7 @@ runs:
           "infra_live_repo": "${{ github.repository }}",
           "working_directory": "${{ inputs.working_directory }}",
           "terragrunt_command": "${{ inputs.command }} ${{ inputs.args }}"
+          "pipelines_cli_version": "${{ inputs.pipelines_cli_version }}"
           }'
 
     # Await default
@@ -315,4 +321,3 @@ runs:
       run: |
         ISSUE_BODY=":x: Terragrunt Apply failed for "$'`'"$WORKING_DIR"$'` when applying changes requested in PR #$PR_NUMBER.\n\n _Inspect the attached logs, triage the issue, then create a new pull request with the required changes._\n\n[View logs]('"$JOB_URL"$')'
         gh issue create --title "Terragrunt Apply failed for $WORKING_DIR" --body "$ISSUE_BODY" --assignee $ACTOR
-
