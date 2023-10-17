@@ -29,8 +29,25 @@ inputs:
     description: "GitHub PAT which has access to create issues and PR comments in your infrastructure-live repository"
     required: true
   change_type:
-    description: "What type of infrastructure change occurred"
+    type: choice
+    description: The change type for the infra change, as detected by pipelines orchestrate
     required: true
+    options:
+      - ModuleChanged
+      - ModuleDeleted
+      - ModuleAdded
+      - EnvCommonChanged
+      - EnvCommonDeleted
+      - EnvCommonAdded
+      - AccountRequested
+      - AccountAdded
+      - AccountChanged
+      - PipelinesPermissionAdded
+      - PipelinesPermissionChanged
+      - PipelinesPermissionDeleted
+      - PipelinesEnvCommonPermissionAdded
+      - PipelinesEnvCommonPermissionChanged
+      - PipelinesEnvCommonPermissionDeleted
   additional_data:
     description: "Change Type specific data"
     required: false
@@ -63,6 +80,7 @@ runs:
           "working_directory": "${{ inputs.working_directory }}",
           "terragrunt_command": "${{ inputs.command }} ${{ inputs.args }}",
           "pipelines_cli_version": "${{ inputs.pipelines_cli_version }}"
+          "pipelines_change_type": "${{ inputs.change_type }}"
           }'
     - name: Dispatch an action and get the run ID
       if: ${{ inputs.change_type == 'AccountRequested' }}
