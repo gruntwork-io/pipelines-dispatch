@@ -79,7 +79,7 @@ runs:
           "infra_live_repo": "${{ github.repository }}",
           "working_directory": "${{ inputs.working_directory }}",
           "terragrunt_command": "${{ inputs.command }} ${{ inputs.args }}",
-          "pipelines_cli_version": "${{ inputs.pipelines_cli_version }}"
+          "pipelines_cli_version": "${{ inputs.pipelines_cli_version }}",
           "pipelines_change_type": "${{ inputs.change_type }}"
           }'
     - name: Dispatch an action and get the run ID
