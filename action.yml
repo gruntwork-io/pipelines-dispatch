@@ -55,7 +55,7 @@ inputs:
     description: "The github actor responsible for the change"
     required: true
   gruntwork_config:
-    description: "Base64 encoded Gruntwork Config YAML"
+    description: "Base64 encoded content of the Gruntwork Config YAML file"
     required: true
 
 runs:

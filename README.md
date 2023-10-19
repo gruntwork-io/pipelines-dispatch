@@ -15,7 +15,7 @@ This GitHub Action, named "Pipelines Dispatch," is designed to dispatch Terragru
 - `change_type` (required): The type of infrastructure change that occurred.
 - `additional_data` (optional): Additional data related to the change type.
 - `actor` (required): The GitHub actor responsible for the change.
-- `gruntwork_config` (required) Base64 encoded Gruntwork config YAML. Contains values like the version of the Gruntwork Pipelines CLI to use for execution.
+- `gruntwork_config` (required) Base64 encoded content of the Gruntwork Config YAML file. Contains values like the version of the Gruntwork Pipelines CLI to use for execution.
 
 ## Usage
 
