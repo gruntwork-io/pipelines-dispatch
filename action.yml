@@ -80,7 +80,8 @@ runs:
           "working_directory": "${{ inputs.working_directory }}",
           "terragrunt_command": "${{ inputs.command }} ${{ inputs.args }}",
           "pipelines_cli_version": "${{ inputs.pipelines_cli_version }}",
-          "pipelines_change_type": "${{ inputs.change_type }}"
+          "pipelines_change_type": "${{ inputs.change_type }}",
+          "child_account_id": "${{ fromJSON(inputs.additional_data).ChildAccountId }}"
           }'
     - name: Dispatch an action and get the run ID
       if: ${{ inputs.change_type == 'AccountRequested' }}
