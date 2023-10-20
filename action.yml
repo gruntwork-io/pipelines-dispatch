@@ -54,9 +54,6 @@ inputs:
   actor:
     description: "The github actor responsible for the change"
     required: true
-  gruntwork_config:
-    description: "Base64 encoded content of the Gruntwork Config YAML file"
-    required: true
 
 runs:
   using: "composite"
@@ -78,8 +75,7 @@ runs:
           "branch": "${{ inputs.branch }}",
           "infra_live_repo": "${{ github.repository }}",
           "working_directory": "${{ inputs.working_directory }}",
-          "terragrunt_command": "${{ inputs.command }} ${{ inputs.args }}",
-          "gruntwork_config": "${{ inputs.gruntwork_config }}"
+          "terragrunt_command": "${{ inputs.command }} ${{ inputs.args }}"
           }'
     - name: Dispatch an action and get the run ID
       if: ${{ inputs.change_type == 'AccountRequested' }}
@@ -99,8 +95,7 @@ runs:
           "branch": "${{ inputs.branch }}",
           "infra_live_repo": "${{ github.repository }}",
           "working_directory": "${{ inputs.working_directory }}",
-          "terragrunt_command": "${{ inputs.command }} ${{ inputs.args }}",
-          "gruntwork_config": "${{ inputs.gruntwork_config }}"
+          "terragrunt_command": "${{ inputs.command }} ${{ inputs.args }}"
           }'
     - name: Dispatch an action and get the run ID
       if: ${{ inputs.change_type == 'AccountAdded' }}
@@ -120,8 +115,7 @@ runs:
           "branch": "${{ inputs.branch }}",
           "infra_live_repo": "${{ github.repository }}",
           "working_directory": "${{ inputs.working_directory }}",
-          "terragrunt_command": "${{ inputs.command }} ${{ inputs.args }}",
-          "gruntwork_config": "${{ inputs.gruntwork_config }}"
+          "terragrunt_command": "${{ inputs.command }} ${{ inputs.args }}"
           }'
 
     # Await default
