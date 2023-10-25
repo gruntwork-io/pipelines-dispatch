@@ -54,9 +54,6 @@ inputs:
   actor:
     description: "The github actor responsible for the change"
     required: true
-  pipelines_cli_version:
-    description: The version of the Gruntwork Pipelines CLI to use
-    required: true
 
 runs:
   using: "composite"
@@ -79,7 +76,6 @@ runs:
           "infra_live_repo": "${{ github.repository }}",
           "working_directory": "${{ inputs.working_directory }}",
           "terragrunt_command": "${{ inputs.command }} ${{ inputs.args }}",
-          "pipelines_cli_version": "${{ inputs.pipelines_cli_version }}",
           "pipelines_change_type": "${{ inputs.change_type }}",
           "child_account_id": "${{ fromJSON(inputs.additional_data).ChildAccountId }}"
           }'
@@ -101,8 +97,7 @@ runs:
           "branch": "${{ inputs.branch }}",
           "infra_live_repo": "${{ github.repository }}",
           "working_directory": "${{ inputs.working_directory }}",
-          "terragrunt_command": "${{ inputs.command }} ${{ inputs.args }}",
-          "pipelines_cli_version": "${{ inputs.pipelines_cli_version }}"
+          "terragrunt_command": "${{ inputs.command }} ${{ inputs.args }}"
           }'
     - name: Dispatch an action and get the run ID
       if: ${{ inputs.change_type == 'AccountAdded' }}
@@ -122,8 +117,7 @@ runs:
           "branch": "${{ inputs.branch }}",
           "infra_live_repo": "${{ github.repository }}",
           "working_directory": "${{ inputs.working_directory }}",
-          "terragrunt_command": "${{ inputs.command }} ${{ inputs.args }}",
-          "pipelines_cli_version": "${{ inputs.pipelines_cli_version }}"
+          "terragrunt_command": "${{ inputs.command }} ${{ inputs.args }}"
           }'
 
     # Await default
