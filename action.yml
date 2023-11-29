@@ -115,11 +115,10 @@ runs:
         workflow: create-sdlc-accounts-and-generate-baselines.yml
         workflow_inputs: '{
           "management_account": "${{ inputs.account_id }}",
-          "new_account_name": "${{ fromJSON(inputs.additional_data).AccountName }}",
           "branch": "${{ inputs.branch }}",
           "infra_live_repo": "${{ github.repository }}",
           "working_directory": "${{ inputs.working_directory }}",
-          "terragrunt_command": "${{ inputs.command }} ${{ inputs.args }}"
+          "terragrunt_command": "${{ inputs.command }} ${{ inputs.args }}",
           "team_account_names": "${{ fromJSON(inputs.additional_data).TeamAccountNames }}"
           }'
     - name: Dispatch account-added workflow and get the run ID
@@ -160,7 +159,7 @@ runs:
           "branch": "${{ inputs.branch }}",
           "infra_live_repo": "${{ github.repository }}",
           "working_directory": "${{ inputs.working_directory }}",
-          "terragrunt_command": "${{ inputs.command }} ${{ inputs.args }}"
+          "terragrunt_command": "${{ inputs.command }} ${{ inputs.args }}",
           "team_account_data": "${{ fromJSON(inputs.additional_data) }}""
           }'
 
