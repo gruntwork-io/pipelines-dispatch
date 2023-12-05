@@ -160,7 +160,7 @@ runs:
           "infra_live_repo": "${{ github.repository }}",
           "working_directory": "${{ inputs.working_directory }}",
           "terragrunt_command": "${{ inputs.command }} ${{ inputs.args }}",
-          "team_account_data": "${{ fromJSON(inputs.additional_data) }}""
+          "team_account_data": "${{ inputs.additional_data }}"
           }'
 
     # Await default workflow run
