@@ -157,7 +157,6 @@ runs:
           "management_account": "${{ inputs.account_id }}",
           "branch": "${{ inputs.branch }}",
           "infra_live_repo": "${{ github.repository }}",
-          "working_directory": "${{ inputs.working_directory }}",
           "terragrunt_command": "${{ inputs.command }} ${{ inputs.args }}",
           "team_account_data": ${{ toJSON(inputs.additional_data) }}
           }'
