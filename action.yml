@@ -155,7 +155,6 @@ runs:
         workflow: apply-new-sdlc-accounts-baseline.yml
         workflow_inputs: '{
           "management_account": "${{ inputs.account_id }}",
-          "child_account": "${{ fromJSON(inputs.additional_data).ChildAccountId }}",
           "branch": "${{ inputs.branch }}",
           "infra_live_repo": "${{ github.repository }}",
           "working_directory": "${{ inputs.working_directory }}",
