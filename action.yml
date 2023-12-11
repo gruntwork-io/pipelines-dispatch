@@ -341,6 +341,9 @@ runs:
           COPY="_To **re-run** the plan, push a new set of changes to this pull request’s branch._"
         fi
 
+        # TODO: Remove debug echo
+        echo "COPY=$COPY"
+
         # Post PR comment indicating terragrunt plan success/failure
         COMMENT_BODY=$'## Terragrunt Plan\n\n'"$TERRAGRUNT_STEP_EMOJI Terragrunt Plan $TERRAGRUNT_STEP_STATUS for "$'`'"$WORKING_DIR"$'`.\n\n '"$COPY"$'\n\n[View logs]('"$TERRAGRUNT_STEP_URL"$')'
         if [[ -n "$TERRAGRUNT_STEP_STATUS" ]]; then gh issue comment $PR_NUMBER --body "$COMMENT_BODY"; fi
@@ -355,7 +358,11 @@ runs:
             LINK=$'- ['"${FAILED_STEP_NAMES[$i]}"$']('"https://github.com/$REPO_OWNER/$REPO/actions/runs/$RUN_ID/job/$JOB_ID"$'#step:'"${FAILED_STEP_NUMBERS[$i]}"$':1)'
             COMMENT_BODY="$COMMENT_BODY""$LINK"$'\n'
           done
+
+          echo "COMMENT_BODY=$COMMENT_BODY"
+          echo "link=$LINK"
           gh issue comment $PR_NUMBER --body "$COMMENT_BODY"
+          echo "COMMENTED"
         fi
 
     - name: Get requesting PR number
