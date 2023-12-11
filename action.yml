@@ -390,7 +390,9 @@ runs:
           COPY="_**Apply** ran on the \`${{ github.ref_name }}\` branch after this pull request was merged._"
         else
           COPY="_To recover from the failure, check the logs, push any required changes to a new branch, then create a new pull request._"
-        fi
+
+        # TODO: Remove debug echo
+        echo "COPY=$COPY"
 
         # Post PR comment indicating terragrunt apply success/failure
         COMMENT_BODY=$'## Terragrunt Apply\n\n'"$TERRAGRUNT_STEP_EMOJI Terragrunt Apply $TERRAGRUNT_STEP_STATUS for "$'`'"$WORKING_DIR"$'`.\n\n '"$COPY"$'\n\n[View logs]('"$TERRAGRUNT_STEP_URL"$')'
@@ -406,7 +408,11 @@ runs:
             LINK=$'- ['"${FAILED_STEP_NAMES[$i]}"$']('"https://github.com/$REPO_OWNER/$REPO/actions/runs/$RUN_ID/job/$JOB_ID"$'#step:'"${FAILED_STEP_NUMBERS[$i]}"$':1)'
             COMMENT_BODY="$COMMENT_BODY""$LINK"$'\n'
           done
+
+          echo "COMMENT_BODY=$COMMENT_BODY"
+          echo "link=$LINK"
           gh issue comment $PR_NUMBER --body "$COMMENT_BODY"
+          echo "COMMENTED"
         fi
 
     - name: Open GH Issue on apply failure
