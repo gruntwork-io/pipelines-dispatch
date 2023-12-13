@@ -36,6 +36,7 @@ inputs:
       - ModuleChanged
       - ModuleDeleted
       - ModuleAdded
+      - ModulesAdded
       - EnvCommonChanged
       - EnvCommonDeleted
       - EnvCommonAdded
