@@ -29,25 +29,25 @@ inputs:
     description: "GitHub PAT which has access to create issues and PR comments in your infrastructure-live repository"
     required: true
   change_type:
-    type: choice
     description: The change type for the infra change, as detected by pipelines orchestrate
     required: true
-    options:
-      - ModuleChanged
-      - ModuleDeleted
-      - ModuleAdded
-      - EnvCommonChanged
-      - EnvCommonDeleted
-      - EnvCommonAdded
-      - AccountRequested
-      - AccountAdded
-      - AccountChanged
-      - PipelinesPermissionAdded
-      - PipelinesPermissionChanged
-      - PipelinesPermissionDeleted
-      - PipelinesEnvCommonPermissionAdded
-      - PipelinesEnvCommonPermissionChanged
-      - PipelinesEnvCommonPermissionDeleted
+    # These are the valid options, but it's not enforced by GitHub Actions
+    # options:
+    #   - ModuleChanged
+    #   - ModuleDeleted
+    #   - ModuleAdded
+    #   - EnvCommonChanged
+    #   - EnvCommonDeleted
+    #   - EnvCommonAdded
+    #   - AccountRequested
+    #   - AccountAdded
+    #   - AccountChanged
+    #   - PipelinesPermissionAdded
+    #   - PipelinesPermissionChanged
+    #   - PipelinesPermissionDeleted
+    #   - PipelinesEnvCommonPermissionAdded
+    #   - PipelinesEnvCommonPermissionChanged
+    #   - PipelinesEnvCommonPermissionDeleted
   additional_data:
     description: "Change Type specific data"
     required: false
