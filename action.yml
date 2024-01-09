@@ -211,10 +211,6 @@ runs:
       shell: bash
       run: |
         RUN_ID=${{ steps.return_dispatch.outputs.run_id }}
-        if [[ -z "$RUN_ID" ]]; then RUN_ID=${{ steps.return_dispatch_acct_req.outputs.run_id }}; fi
-        if [[ -z "$RUN_ID" ]]; then RUN_ID=${{ steps.return_dispatch_acct_add.outputs.run_id }}; fi
-        if [[ -z "$RUN_ID" ]]; then RUN_ID=${{ steps.return_dispatch_team_accts_req.outputs.run_id }}; fi
-        if [[ -z "$RUN_ID" ]]; then RUN_ID=${{ steps.return_dispatch_team_accts_add.outputs.run_id }}; fi
         JOB_ID="$(gh api /repos/$REPO_OWNER/$REPO/actions/runs/$RUN_ID/jobs | jq .jobs[0].id)"
         JOB_OUTPUT=$(gh api /repos/$REPO_OWNER/$REPO/actions/jobs/$JOB_ID)
         STEP_NUMBER=$(echo "$JOB_OUTPUT" | jq -c '[.steps[] | select(.name | startswith("Run terragrunt")).number] | last')
