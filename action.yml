@@ -73,6 +73,7 @@ runs:
         WORKING_DIRECTORY: ${{ inputs.working_directory }}
         COMMAND: ${{ inputs.command }}
         ARGS: ${{ inputs.args }}
+        CHILD_ACCOUNT_ID: ${{ fromJSON(inputs.additional_data).ChildAccountId }}
       run: |
         if [[ "$CHANGE_TYPE" == "AccountRequested" ]]; then
           echo "workflow=create-account-and-generate-baselines.yml" >> "$GITHUB_OUTPUT"
@@ -154,12 +155,16 @@ runs:
             --arg infra_live_repo "$INFRA_LIVE_REPO" \
             --arg working_directory "$WORKING_DIRECTORY" \
             --arg terragrunt_command "$COMMAND $ARGS" \
+            --arg pipelines_change_type "$CHANGE_TYPE" \
+            --arg child_account_id "$CHILD_ACCOUNT_ID" \
             '{
               "account": $account,
               "branch": $branch,
               "infra_live_repo": $infra_live_repo,
               "working_directory": $working_directory,
-              "terragrunt_command": $terragrunt_command
+              "terragrunt_command": $terragrunt_command,
+              "pipelines_change_type": $pipelines_change_type,
+              "child_account_id": $child_account_id
             }'
           )" >> "$GITHUB_OUTPUT"
         fi
