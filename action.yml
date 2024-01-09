@@ -278,8 +278,6 @@ runs:
             COMMENT_BODY="$COMMENT_BODY""$LINK"$'\n'
           done
 
-          echo "COMMENT_BODY=$COMMENT_BODY"
-          echo "link=$LINK"
           gh issue comment $PR_NUMBER --body "$COMMENT_BODY"
           echo "COMMENTED"
         fi
@@ -333,8 +331,6 @@ runs:
             COMMENT_BODY="$COMMENT_BODY""$LINK"$'\n'
           done
 
-          echo "COMMENT_BODY=$COMMENT_BODY"
-          echo "link=$LINK"
           gh issue comment $PR_NUMBER --body "$COMMENT_BODY"
           echo "COMMENTED"
         fi
