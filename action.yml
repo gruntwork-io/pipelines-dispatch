@@ -33,21 +33,24 @@ inputs:
     required: true
     # These are the valid options, but it's not enforced by GitHub Actions
     # options:
-    #   - ModuleChanged
-    #   - ModuleDeleted
-    #   - ModuleAdded
-    #   - EnvCommonChanged
-    #   - EnvCommonDeleted
-    #   - EnvCommonAdded
-    #   - AccountRequested
-    #   - AccountAdded
-    #   - AccountChanged
-    #   - PipelinesPermissionAdded
-    #   - PipelinesPermissionChanged
-    #   - PipelinesPermissionDeleted
-    #   - PipelinesEnvCommonPermissionAdded
-    #   - PipelinesEnvCommonPermissionChanged
-    #   - PipelinesEnvCommonPermissionDeleted
+    # - ModuleChanged
+    # - ModuleDeleted
+    # - ModuleAdded
+    # - ModulesAdded
+    # - EnvCommonChanged
+    # - EnvCommonDeleted
+    # - EnvCommonAdded
+    # - AccountRequested
+    # - TeamAccountsRequested
+    # - AccountAdded
+    # - TeamAccountsAdded
+    # - AccountChanged
+    # - PipelinesPermissionAdded
+    # - PipelinesPermissionChanged
+    # - PipelinesPermissionDeleted
+    # - PipelinesEnvCommonPermissionAdded
+    # - PipelinesEnvCommonPermissionChanged
+    # - PipelinesEnvCommonPermissionDeleted
   additional_data:
     description: "Change Type specific data"
     required: false
@@ -58,8 +61,8 @@ inputs:
 runs:
   using: "composite"
   steps:
-    - name: Dispatch an action and get the run ID
-      if: ${{ !contains(fromJSON('["AccountRequested", "AccountAdded"]'), inputs.change_type)}}
+    - name: Dispatch default workflow and get the run ID
+      if: ${{ !contains(fromJSON('["AccountRequested", "AccountAdded", "TeamAccountsRequested", "TeamAccountsAdded"]'), inputs.change_type)}}
       env:
         GH_TOKEN: ${{ inputs.infra_pipelines_token }}
       uses: codex-/return-dispatch@v1.10.0
@@ -79,7 +82,7 @@ runs:
           "pipelines_change_type": "${{ inputs.change_type }}",
           "child_account_id": "${{ fromJSON(inputs.additional_data).ChildAccountId }}"
           }'
-    - name: Dispatch an action and get the run ID
+    - name: Dispatch account-requested workflow and get the run ID
       if: ${{ inputs.change_type == 'AccountRequested' }}
       env:
         GH_TOKEN: ${{ inputs.infra_pipelines_token }}
@@ -99,7 +102,27 @@ runs:
           "working_directory": "${{ inputs.working_directory }}",
           "terragrunt_command": "${{ inputs.command }} ${{ inputs.args }}"
           }'
-    - name: Dispatch an action and get the run ID
+    - name: Dispatch team-accounts-requested workflow and get the run ID
+      if: ${{ inputs.change_type == 'TeamAccountsRequested' }}
+      env:
+        GH_TOKEN: ${{ inputs.infra_pipelines_token }}
+      uses: codex-/return-dispatch@v1.10.0
+      id: return_dispatch_team_accts_req
+      with:
+        token: ${{ inputs.infra_pipelines_token }}
+        ref: "refs/heads/main"
+        repo: ${{ inputs.repo }}
+        owner: ${{ inputs.repo_owner }}
+        workflow: create-sdlc-accounts-and-generate-baselines.yml
+        workflow_inputs: '{
+          "management_account": "${{ inputs.account_id }}",
+          "branch": "${{ inputs.branch }}",
+          "infra_live_repo": "${{ github.repository }}",
+          "working_directory": "${{ inputs.working_directory }}",
+          "terragrunt_command": "${{ inputs.command }} ${{ inputs.args }}",
+          "team_account_names": "${{ fromJSON(inputs.additional_data).TeamAccountNames }}"
+          }'
+    - name: Dispatch account-added workflow and get the run ID
       if: ${{ inputs.change_type == 'AccountAdded' }}
       env:
         GH_TOKEN: ${{ inputs.infra_pipelines_token }}
@@ -119,10 +142,30 @@ runs:
           "working_directory": "${{ inputs.working_directory }}",
           "terragrunt_command": "${{ inputs.command }} ${{ inputs.args }}"
           }'
+    - name: Dispatch team-accounts-added workflow and get the run ID
+      if: ${{ inputs.change_type == 'TeamAccountsAdded' }}
+      env:
+        GH_TOKEN: ${{ inputs.infra_pipelines_token }}
+      uses: codex-/return-dispatch@v1.10.0
+      id: return_dispatch_team_accts_add
+      with:
+        token: ${{ inputs.infra_pipelines_token }}
+        ref: "refs/heads/main"
+        repo: ${{ inputs.repo }}
+        owner: ${{ inputs.repo_owner }}
+        workflow: apply-new-sdlc-accounts-baseline.yml
+        workflow_inputs: '{
+          "management_account": "${{ inputs.account_id }}",
+          "branch": "${{ inputs.branch }}",
+          "infra_live_repo": "${{ github.repository }}",
+          "working_directory": "${{ inputs.working_directory }}",
+          "terragrunt_command": "${{ inputs.command }} ${{ inputs.args }}",
+          "team_account_data": ${{ toJSON(inputs.additional_data) }}
+          }'
 
-    # Await default
+    # Await default workflow run
     - name: Await Run ID ${{ steps.return_dispatch.outputs.run_id }}
-      if: ${{ !contains(fromJSON('["AccountRequested", "AccountAdded"]'), inputs.change_type)}}
+      if: ${{ !contains(fromJSON('["AccountRequested", "AccountAdded", "TeamAccountsRequested", "TeamAccountsAdded"]'), inputs.change_type)}}
       env:
         GH_TOKEN: ${{ inputs.infra_pipelines_token }}
       uses: Codex-/await-remote-run@v1.9.0
@@ -135,7 +178,7 @@ runs:
         poll_interval_ms: 5000 # Optional
 
     - name: Completed
-      if: ${{ always() && !contains(fromJSON('["AccountRequested", "AccountAdded"]'), inputs.change_type)}}
+      if: ${{ always() && !contains(fromJSON('["AccountRequested", "AccountAdded", "TeamAccountsRequested", "TeamAccountsAdded"]'), inputs.change_type)}}
       shell: bash
       env:
         COMMAND: ${{ inputs.command }}
@@ -145,7 +188,7 @@ runs:
         REPO_OWNER: ${{ inputs.repo_owner }}
       run: echo "::notice ::Completed $COMMAND for $WORKING_DIR in acct $ACC0UNT_ID%0AFor details see https://github.com/$REPO_OWNER/$REPO/actions/runs/${{ steps.return_dispatch.outputs.run_id }}"
 
-    # Await account request
+    # Await account-requested workflow run
     - name: Await Acct Req Run ID ${{ steps.return_dispatch_acct_req.outputs.run_id }}
       if: ${{ always() && inputs.change_type == 'AccountRequested' }}
       env:
@@ -170,7 +213,32 @@ runs:
         REPO_OWNER: ${{ inputs.repo_owner }}
       run: echo "::notice ::Completed $COMMAND for $WORKING_DIR in acct $ACCOUNT_ID%0AFor details see https://github.com/$REPO_OWNER/$REPO/actions/runs/${{ steps.return_dispatch_acct_req.outputs.run_id }}"
 
-    # Await account added
+    # Await team-accounts-requested workflow run
+    - name: Await Acct Req Run ID ${{ steps.return_dispatch_team_accts_req.outputs.run_id }}
+      if: ${{ always() && inputs.change_type == 'TeamAccountsRequested' }}
+      env:
+        GH_TOKEN: ${{ inputs.infra_pipelines_token }}
+      uses: Codex-/await-remote-run@v1.9.0
+      with:
+        token: ${{ inputs.infra_pipelines_token }}
+        repo: ${{ inputs.repo }}
+        owner: ${{ inputs.repo_owner }}
+        run_id: ${{ steps.return_dispatch_team_accts_req.outputs.run_id }}
+        run_timeout_seconds: 3600 # one hour
+        poll_interval_ms: 5000 # Optional
+
+    - name: Completed Team Accounts Requested workflow
+      if: ${{ always() && inputs.change_type == 'TeamAccountsRequested' }}
+      shell: bash
+      env:
+        COMMAND: ${{ inputs.command }}
+        WORKING_DIR: ${{ inputs.working_directory }}
+        ACCOUNT_ID: ${{ inputs.account_id }}
+        REPO: ${{ inputs.repo }}
+        REPO_OWNER: ${{ inputs.repo_owner }}
+      run: echo "::notice ::Completed $COMMAND for $WORKING_DIR in acct $ACCOUNT_ID%0AFor details see https://github.com/$REPO_OWNER/$REPO/actions/runs/${{ steps.return_dispatch_team_accts_req.outputs.run_id }}"
+
+    # Await account-added workflow run
     - name: Await Acct Add Run ID ${{ steps.return_dispatch_acct_add.outputs.run_id }}
       if: ${{ always() && inputs.change_type == 'AccountAdded' }}
       env:
@@ -189,6 +257,25 @@ runs:
       shell: bash
       run: echo "::notice ::Completed ${{ inputs.command }} for ${{ inputs.working_directory }} in acct ${{ inputs.account_id }}%0AFor details see https://github.com/${{ inputs.repo_owner }}/${{ inputs.repo }}/actions/runs/${{ steps.return_dispatch_acct_add.outputs.run_id }}"
 
+    # Await team-accounts-added workflow run
+    - name: Await Acct Add Run ID ${{ steps.return_dispatch_team_accts_add.outputs.run_id }}
+      if: ${{ always() && inputs.change_type == 'TeamAccountsAdded' }}
+      env:
+        GH_TOKEN: ${{ inputs.infra_pipelines_token }}
+      uses: Codex-/await-remote-run@v1.9.0
+      with:
+        token: ${{ inputs.infra_pipelines_token }}
+        repo: ${{ inputs.repo }}
+        owner: ${{ inputs.repo_owner }}
+        run_id: ${{ steps.return_dispatch_team_accts_add.outputs.run_id }}
+        run_timeout_seconds: 3600 # one hour
+        poll_interval_ms: 5000 # Optional
+
+    - name: Completed Team Accounts Added workflow
+      if: ${{ always() && inputs.change_type == 'TeamAccountsAdded' }}
+      shell: bash
+      run: echo "::notice ::Completed ${{ inputs.command }} for ${{ inputs.working_directory }} in acct ${{ inputs.account_id }}%0AFor details see https://github.com/${{ inputs.repo_owner }}/${{ inputs.repo }}/actions/runs/${{ steps.return_dispatch_team_accts_add.outputs.run_id }}"
+
     - name: Get Job ID & Terragrunt Run URL
       if: ${{ always() }} # This ensures this step always runs regardless of failure of previous step
       id: jobs_data
@@ -201,6 +288,8 @@ runs:
         RUN_ID=${{ steps.return_dispatch.outputs.run_id }}
         if [[ -z "$RUN_ID" ]]; then RUN_ID=${{ steps.return_dispatch_acct_req.outputs.run_id }}; fi
         if [[ -z "$RUN_ID" ]]; then RUN_ID=${{ steps.return_dispatch_acct_add.outputs.run_id }}; fi
+        if [[ -z "$RUN_ID" ]]; then RUN_ID=${{ steps.return_dispatch_team_accts_req.outputs.run_id }}; fi
+        if [[ -z "$RUN_ID" ]]; then RUN_ID=${{ steps.return_dispatch_team_accts_add.outputs.run_id }}; fi
         JOB_ID="$(gh api /repos/$REPO_OWNER/$REPO/actions/runs/$RUN_ID/jobs | jq .jobs[0].id)"
         JOB_OUTPUT=$(gh api /repos/$REPO_OWNER/$REPO/actions/jobs/$JOB_ID)
         STEP_NUMBER=$(echo "$JOB_OUTPUT" | jq -c '[.steps[] | select(.name | startswith("Run terragrunt")).number] | last')
@@ -267,7 +356,9 @@ runs:
             LINK=$'- ['"${FAILED_STEP_NAMES[$i]}"$']('"https://github.com/$REPO_OWNER/$REPO/actions/runs/$RUN_ID/job/$JOB_ID"$'#step:'"${FAILED_STEP_NUMBERS[$i]}"$':1)'
             COMMENT_BODY="$COMMENT_BODY""$LINK"$'\n'
           done
+
           gh issue comment $PR_NUMBER --body "$COMMENT_BODY"
+          echo "COMMENTED"
         fi
 
     - name: Get requesting PR number
@@ -318,7 +409,9 @@ runs:
             LINK=$'- ['"${FAILED_STEP_NAMES[$i]}"$']('"https://github.com/$REPO_OWNER/$REPO/actions/runs/$RUN_ID/job/$JOB_ID"$'#step:'"${FAILED_STEP_NUMBERS[$i]}"$':1)'
             COMMENT_BODY="$COMMENT_BODY""$LINK"$'\n'
           done
+
           gh issue comment $PR_NUMBER --body "$COMMENT_BODY"
+          echo "COMMENTED"
         fi
 
     - name: Open GH Issue on apply failure
