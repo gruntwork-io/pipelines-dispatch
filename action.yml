@@ -90,8 +90,8 @@ runs:
               "infra_live_repo": $infra_live_repo,
               "working_directory": $working_directory,
               "terragrunt_command": $terragrunt_command
-            }')" >> "$GITHUB_OUTPUT"
-          )"
+            }'
+          )" >> "$GITHUB_OUTPUT"
         elif [[ "$CHANGE_TYPE" == "AccountAdded" ]]; then
           echo "workflow=apply-new-account-baseline.yml" >> "$GITHUB_OUTPUT"
           echo "workflow_inputs=$(jq -c -n \
@@ -108,8 +108,8 @@ runs:
               "infra_live_repo": $infra_live_repo,
               "working_directory": $working_directory,
               "terragrunt_command": $terragrunt_command
-            }')" >> "$GITHUB_OUTPUT"
-          )"
+            }'
+          )" >> "$GITHUB_OUTPUT"
         elif [[ "$CHANGE_TYPE" == "TeamAccountsRequested" ]]; then
           echo "workflow=create-sdlc-accounts-and-generate-baselines.yml" >> "$GITHUB_OUTPUT"
           echo "workflow_inputs=$(jq -c -n \
@@ -126,8 +126,8 @@ runs:
               "working_directory": $working_directory,
               "terragrunt_command": $terragrunt_command,
               "team_account_names": $team_account_names
-            }')" >> "$GITHUB_OUTPUT"
-          )"
+            }'
+          )" >> "$GITHUB_OUTPUT"
         elif [[ "$CHANGE_TYPE" == "TeamAccountsAdded" ]]; then
           echo "workflow=apply-new-sdlc-accounts-baseline.yml" >> "$GITHUB_OUTPUT"
           echo "workflow_inputs=$(jq -c -n \
@@ -144,8 +144,8 @@ runs:
               "working_directory": $working_directory,
               "terragrunt_command": $terragrunt_command,
               "team_account_data": $team_account_data
-            }')" >> "$GITHUB_OUTPUT"
-          )"
+            }'
+          )" >> "$GITHUB_OUTPUT"
         else
           echo "workflow=terragrunt-executor.yml" >> "$GITHUB_OUTPUT"
           echo "workflow_inputs=$(jq -c -n \
@@ -160,8 +160,8 @@ runs:
               "infra_live_repo": $infra_live_repo,
               "working_directory": $working_directory,
               "terragrunt_command": $terragrunt_command
-            }')" >> "$GITHUB_OUTPUT"
-          )"
+            }'
+          )" >> "$GITHUB_OUTPUT"
         fi
 
     - name: Dispatch default workflow and get the run ID
