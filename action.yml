@@ -33,21 +33,24 @@ inputs:
     required: true
     # These are the valid options, but it's not enforced by GitHub Actions
     # options:
-    #   - ModuleChanged
-    #   - ModuleDeleted
-    #   - ModuleAdded
-    #   - EnvCommonChanged
-    #   - EnvCommonDeleted
-    #   - EnvCommonAdded
-    #   - AccountRequested
-    #   - AccountAdded
-    #   - AccountChanged
-    #   - PipelinesPermissionAdded
-    #   - PipelinesPermissionChanged
-    #   - PipelinesPermissionDeleted
-    #   - PipelinesEnvCommonPermissionAdded
-    #   - PipelinesEnvCommonPermissionChanged
-    #   - PipelinesEnvCommonPermissionDeleted
+    # - ModuleChanged
+    # - ModuleDeleted
+    # - ModuleAdded
+    # - ModulesAdded
+    # - EnvCommonChanged
+    # - EnvCommonDeleted
+    # - EnvCommonAdded
+    # - AccountRequested
+    # - TeamAccountsRequested
+    # - AccountAdded
+    # - TeamAccountsAdded
+    # - AccountChanged
+    # - PipelinesPermissionAdded
+    # - PipelinesPermissionChanged
+    # - PipelinesPermissionDeleted
+    # - PipelinesEnvCommonPermissionAdded
+    # - PipelinesEnvCommonPermissionChanged
+    # - PipelinesEnvCommonPermissionDeleted
   additional_data:
     description: "Change Type specific data"
     required: false
