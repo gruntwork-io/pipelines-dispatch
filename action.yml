@@ -57,10 +57,48 @@ inputs:
   actor:
     description: "The github actor responsible for the change"
     required: true
+  pipelines_token:
+    description: "The GitHub token for downloading the Gruntwork Pipelines binary"
+    required: false
+  pipelines_cli_version:
+    description: "The version of the Gruntwork Pipelines CLI to use"
+    required: false
+    default: "0.3.0"
+  pipelines_auth_role:
+    description: "The role to assume before running `pipelines auth presign`, which is used to authenticate the calling repo. Only necessary when pipelines auth role is provisioned and checked in infrastructure-pipelines repo."
+    required: false
+  pipelines_auth_region:
+    description: "The region in which the role to assume before running `pipelines auth presign`. Only necessary when pipelines auth role is provisioned and checked in infrastructure-pipelines repo."
+    required: false
+    default: "us-east-1"
 
 runs:
   using: "composite"
   steps:
+    - name: Download Pipelines CLI
+      if: ${{ inputs.pipelines_token != '' }}
+      uses: dsaltares/fetch-gh-release-asset@1.1.1
+      with:
+        repo: "gruntwork-io/pipelines-cli"
+        version: "tags/${{ inputs.pipelines_cli_version }}"
+        file: "pipelines_linux_amd64"
+        target: "/tmp/pipelines"
+        token: ${{ inputs.token }}
+
+    - name: Install Pipelines CLI
+      if: ${{ inputs.pipelines_token != '' }}
+      shell: bash
+      run: |
+        sudo mv /tmp/pipelines /usr/local/bin/pipelines
+        sudo chmod +x /usr/local/bin/pipelines
+
+    - name: Authenticate with AWS
+      if: ${{ inputs.pipelines_auth_role != '' }}
+      uses: aws-actions/configure-aws-credentials@v4
+      with:
+        role-to-assume: arn:aws:iam::${{ inputs.account_id }}:role/${{ inputs.pipelines_auth_role }}
+        aws-region: ${{ inputs.pipelines_auth_region }}
+
     - name: Setup Action Configurations
       id: setup-action-configurations
       shell: bash
@@ -74,100 +112,8 @@ runs:
         COMMAND: ${{ inputs.command }}
         ARGS: ${{ inputs.args }}
         CHILD_ACCOUNT_ID: ${{ fromJSON(inputs.additional_data).ChildAccountId }}
-      run: |
-        if [[ "$CHANGE_TYPE" == "AccountRequested" ]]; then
-          echo "workflow=create-account-and-generate-baselines.yml" >> "$GITHUB_OUTPUT"
-          echo "workflow_inputs=$(jq -c -n \
-            --arg management_account "$MANAGEMENT_ACCOUNT" \
-            --arg new_account_name "$NEW_ACCOUNT_NAME" \
-            --arg branch "$BRANCH" \
-            --arg infra_live_repo "$INFRA_LIVE_REPO" \
-            --arg working_directory "$WORKING_DIRECTORY" \
-            --arg terragrunt_command "$COMMAND $ARGS" \
-            '{
-              "management_account": $management_account,
-              "new_account_name": $new_account_name,
-              "branch": $branch,
-              "infra_live_repo": $infra_live_repo,
-              "working_directory": $working_directory,
-              "terragrunt_command": $terragrunt_command
-            }'
-          )" >> "$GITHUB_OUTPUT"
-        elif [[ "$CHANGE_TYPE" == "AccountAdded" ]]; then
-          echo "workflow=apply-new-account-baseline.yml" >> "$GITHUB_OUTPUT"
-          echo "workflow_inputs=$(jq -c -n \
-            --arg management_account "$MANAGEMENT_ACCOUNT" \
-            --arg child_account "$NEW_ACCOUNT_NAME" \
-            --arg branch "$BRANCH" \
-            --arg infra_live_repo "$INFRA_LIVE_REPO" \
-            --arg working_directory "$WORKING_DIRECTORY" \
-            --arg terragrunt_command "$COMMAND $ARGS" \
-            '{
-              "management_account": $management_account,
-              "child_account": $child_account,
-              "branch": $branch,
-              "infra_live_repo": $infra_live_repo,
-              "working_directory": $working_directory,
-              "terragrunt_command": $terragrunt_command
-            }'
-          )" >> "$GITHUB_OUTPUT"
-        elif [[ "$CHANGE_TYPE" == "TeamAccountsRequested" ]]; then
-          echo "workflow=create-sdlc-accounts-and-generate-baselines.yml" >> "$GITHUB_OUTPUT"
-          echo "workflow_inputs=$(jq -c -n \
-            --arg management_account "$MANAGEMENT_ACCOUNT" \
-            --arg branch "$BRANCH" \
-            --arg infra_live_repo "$INFRA_LIVE_REPO" \
-            --arg working_directory "$WORKING_DIRECTORY" \
-            --arg terragrunt_command "$COMMAND $ARGS" \
-            --arg team_account_names "$TEAM_ACCOUNT_NAMES" \
-            '{
-              "management_account": $management_account,
-              "branch": $branch,
-              "infra_live_repo": $infra_live_repo,
-              "working_directory": $working_directory,
-              "terragrunt_command": $terragrunt_command,
-              "team_account_names": $team_account_names
-            }'
-          )" >> "$GITHUB_OUTPUT"
-        elif [[ "$CHANGE_TYPE" == "TeamAccountsAdded" ]]; then
-          echo "workflow=apply-new-sdlc-accounts-baseline.yml" >> "$GITHUB_OUTPUT"
-          echo "workflow_inputs=$(jq -c -n \
-            --arg management_account "$MANAGEMENT_ACCOUNT" \
-            --arg branch "$BRANCH" \
-            --arg infra_live_repo "$INFRA_LIVE_REPO" \
-            --arg working_directory "$WORKING_DIRECTORY" \
-            --arg terragrunt_command "$COMMAND $ARGS" \
-            --arg team_account_data "$TEAM_ACCOUNT_DATA" \
-            '{
-              "management_account": $management_account,
-              "branch": $branch,
-              "infra_live_repo": $infra_live_repo,
-              "working_directory": $working_directory,
-              "terragrunt_command": $terragrunt_command,
-              "team_account_data": $team_account_data
-            }'
-          )" >> "$GITHUB_OUTPUT"
-        else
-          echo "workflow=terragrunt-executor.yml" >> "$GITHUB_OUTPUT"
-          echo "workflow_inputs=$(jq -c -n \
-            --arg account "$MANAGEMENT_ACCOUNT" \
-            --arg branch "$BRANCH" \
-            --arg infra_live_repo "$INFRA_LIVE_REPO" \
-            --arg working_directory "$WORKING_DIRECTORY" \
-            --arg terragrunt_command "$COMMAND $ARGS" \
-            --arg pipelines_change_type "$CHANGE_TYPE" \
-            --arg child_account_id "$CHILD_ACCOUNT_ID" \
-            '{
-              "account": $account,
-              "branch": $branch,
-              "infra_live_repo": $infra_live_repo,
-              "working_directory": $working_directory,
-              "terragrunt_command": $terragrunt_command,
-              "pipelines_change_type": $pipelines_change_type,
-              "child_account_id": $child_account_id
-            }'
-          )" >> "$GITHUB_OUTPUT"
-        fi
+        PIPELINES_AUTH_ROLE: ${{ inputs.pipelines_auth_role }}
+      run: ./scripts/setup-action-configurations.sh
 
     - name: Dispatch default workflow and get the run ID
       env:

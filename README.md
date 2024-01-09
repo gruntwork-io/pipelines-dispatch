@@ -15,6 +15,9 @@ This GitHub Action, named "Pipelines Dispatch," is designed to dispatch Terragru
 - `change_type` (required): The type of infrastructure change that occurred.
 - `additional_data` (optional): Additional data related to the change type.
 - `actor` (required): The GitHub actor responsible for the change.
+- `pipelines_token` (optional): GitHub PAT to download `pipelines` binary. If not provided, the action will not install the binary.
+- `pipelines_cli_version` (optional): The version of the `pipelines` binary to download. If not provided, a default version will be used.
+- `pipelines_auth_role` (optional): The IAM role to assume when running the `pipelines auth presign`. If not provided, the action will not assume a role or perform the presign operation.
 
 ## Usage
 
