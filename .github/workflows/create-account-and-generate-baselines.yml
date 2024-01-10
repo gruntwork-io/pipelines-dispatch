@@ -1,0 +1,49 @@
+name: TEST Create Account and Generate Baselines
+
+on:
+  workflow_dispatch:
+    inputs:
+      management_account:
+        description: "Management Account"
+        required: true
+      new_account_name:
+        description: "New Account Name"
+        required: true
+      branch:
+        description: "Branch"
+        required: true
+      infra_live_repo:
+        description: "Infra Live Repo"
+        required: true
+      working_directory:
+        description: "Working Directory"
+        required: true
+      terragrunt_command:
+        description: "Terragrunt Command"
+        required: true
+
+defaults:
+  run:
+    shell: bash
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Test Expected Inputs
+        env:
+          BRANCH: ${{ inputs.branch }}
+          INFRA_LIVE_REPO: ${{ inputs.infra_live_repo }}
+          WORKING_DIRECTORY: ${{ inputs.working_directory }}
+          TERRAGRUNT_COMMAND: ${{ inputs.terragrunt_command }}
+          MANAGEMENT_ACCOUNT: ${{ inputs.management_account }}
+          NEW_ACCOUNT_NAME: ${{ inputs.new_account_name }}
+        run: |
+          # Required Inputs
+          echo "BRANCH: $BRANCH"
+          echo "INFRA_LIVE_REPO: $INFRA_LIVE_REPO"
+          echo "WORKING_DIRECTORY: $WORKING_DIRECTORY"
+          echo "TERRAGRUNT_COMMAND: $TERRAGRUNT_COMMAND"
+          echo "MANAGEMENT_ACCOUNT: $MANAGEMENT_ACCOUNT"
+          echo "NEW_ACCOUNT_NAME: $NEW_ACCOUNT_NAME"
