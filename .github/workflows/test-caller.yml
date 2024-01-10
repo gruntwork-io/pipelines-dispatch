@@ -37,13 +37,18 @@ jobs:
       - name: Checkout repository
         uses: actions/checkout@v4
 
+      - name: Get branch name
+        id: branch
+        run: |
+          echo "branch=${GITHUB_REF#refs/heads/}" >> $GITHUB_OUTPUT
+
       - name: Trigger action.yml workflow
         uses: "./"
         with:
           account_id: "123"
           repo: pipelines-dispatch
           repo_owner: gruntwork-io
-          branch: main
+          branch: ${{ steps.branch.outputs.branch }}
           working_directory: "."
           command: "command"
           args: "args"
