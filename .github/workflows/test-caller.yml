@@ -50,5 +50,5 @@ jobs:
           infra_pipelines_token: ${{ secrets.GITHUB_TOKEN }}
           infra_live_token: ${{ secrets.GITHUB_TOKEN }}
           change_type: ${{ matrix.change_type }}
-          additional_data: "additional_data"
+          additional_data: "{}"
           actor: "actor"
