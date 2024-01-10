@@ -31,6 +31,13 @@ presign_caller_identity_token() {
     pipelines auth presign
 }
 
+append_presigned_caller_identity_token() {
+    readonly workflow_inputs="$1"
+
+    presigned_caller_identity="$(presign_caller_identity_token)"
+    jq --arg presigned_caller_identity "$presigned_caller_identity" '. + {presigned_caller_identity: $presigned_caller_identity}' <<< "$workflow_inputs"
+}
+
 handle_account_request() {
     readonly management_account="$1"
     readonly new_account_name="$2"
@@ -58,8 +65,7 @@ handle_account_request() {
         }'
     )"
     if [[ -n "$pipelines_auth_role" ]]; then
-        presigned_caller_identity="$(presign_caller_identity_token)"
-        workflow_inputs="$(jq --arg presigned_caller_identity "$presigned_caller_identity" '. + {presigned_caller_identity: $presigned_caller_identity}' <<< "$workflow_inputs")"
+        workflow_inputs="$(append_presigned_caller_identity_token "$workflow_inputs")"
     fi
     echo "workflow_inputs=$workflow_inputs" >> "$GITHUB_OUTPUT"
 }
@@ -91,8 +97,7 @@ handle_account_added() {
         }'
     )"
     if [[ -n "$pipelines_auth_role" ]]; then
-        presigned_caller_identity="$(presign_caller_identity_token)"
-        workflow_inputs="$(jq --arg presigned_caller_identity "$presigned_caller_identity" '. + {presigned_caller_identity: $presigned_caller_identity}' <<< "$workflow_inputs")"
+        workflow_inputs="$(append_presigned_caller_identity_token "$workflow_inputs")"
     fi
     echo "workflow_inputs=$workflow_inputs" >> "$GITHUB_OUTPUT"
 }
@@ -122,8 +127,7 @@ handle_team_accounts_requested() {
         }'
     )"
     if [[ -n "$pipelines_auth_role" ]]; then
-        presigned_caller_identity="$(presign_caller_identity_token)"
-        workflow_inputs="$(jq --arg presigned_caller_identity "$presigned_caller_identity" '. + {presigned_caller_identity: $presigned_caller_identity}' <<< "$workflow_inputs")"
+        workflow_inputs="$(append_presigned_caller_identity_token "$workflow_inputs")"
     fi
     echo "workflow_inputs=$workflow_inputs" >> "$GITHUB_OUTPUT"
 }
@@ -155,8 +159,7 @@ handle_team_accounts_added() {
         }'
     )
     if [[ -n "$pipelines_auth_role" ]]; then
-        presigned_caller_identity="$(presign_caller_identity_token)"
-        workflow_inputs="$(jq --arg presigned_caller_identity "$presigned_caller_identity" '. + {presigned_caller_identity: $presigned_caller_identity}' <<< "$workflow_inputs")"
+        workflow_inputs="$(append_presigned_caller_identity_token "$workflow_inputs")"
     fi
     echo "workflow_inputs=$workflow_inputs" >> "$GITHUB_OUTPUT"
 }
@@ -190,8 +193,7 @@ handle_default() {
         }'
     )
     if [[ -n "$pipelines_auth_role" ]]; then
-        presigned_caller_identity="$(presign_caller_identity_token)"
-        workflow_inputs="$(jq --arg presigned_caller_identity "$presigned_caller_identity" '. + {presigned_caller_identity: $presigned_caller_identity}' <<< "$workflow_inputs")"
+        workflow_inputs="$(append_presigned_caller_identity_token "$workflow_inputs")"
     fi
     echo "workflow_inputs=$workflow_inputs" >> "$GITHUB_OUTPUT"
 }
