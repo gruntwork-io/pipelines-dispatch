@@ -3,9 +3,9 @@ on:
   workflow_dispatch:
     inputs:
       distinct_id:
-          description: "A distinct ID for this workflow run"
-          required: true
-          type: string
+        description: "A distinct ID for this workflow run"
+        required: true
+        type: string
       branch:
         description: "The branch in the infrastructure-live repo in which to run the command"
         required: true
@@ -61,6 +61,10 @@ jobs:
   test:
     runs-on: ubuntu-latest
     steps:
+      - name: echo distinct ID ${{ github.event.inputs.distinct_id }}
+        env:
+          DISTINCT_ID: ${{ github.event.inputs.distinct_id }}
+        run: echo "$DISTINCT_ID"
       - name: Test Expected Inputs
         env:
           BRANCH: ${{ inputs.branch }}

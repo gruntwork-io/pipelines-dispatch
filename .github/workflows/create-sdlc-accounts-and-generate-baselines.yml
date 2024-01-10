@@ -42,19 +42,23 @@ jobs:
     runs-on: ubuntu-latest
 
     steps:
-        - name: Test Expected Inputs
-          env:
-            BRANCH: ${{ inputs.branch }}
-            INFRA_LIVE_REPO: ${{ inputs.infra_live_repo }}
-            WORKING_DIRECTORY: ${{ inputs.working_directory }}
-            TERRAGRUNT_COMMAND: ${{ inputs.terragrunt_command }}
-            MANAGEMENT_ACCOUNT: ${{ inputs.management_account }}
-            TEAM_ACCOUNT_NAMES: ${{ inputs.team_account_names }}
-          run: |
-            # Required Inputs
-            echo "BRANCH: $BRANCH"
-            echo "INFRA_LIVE_REPO: $INFRA_LIVE_REPO"
-            echo "WORKING_DIRECTORY: $WORKING_DIRECTORY"
-            echo "TERRAGRUNT_COMMAND: $TERRAGRUNT_COMMAND"
-            echo "MANAGEMENT_ACCOUNT: $MANAGEMENT_ACCOUNT"
-            echo "TEAM_ACCOUNT_NAMES: $TEAM_ACCOUNT_NAMES"
+      - name: echo distinct ID ${{ github.event.inputs.distinct_id }}
+        env:
+          DISTINCT_ID: ${{ github.event.inputs.distinct_id }}
+        run: echo "$DISTINCT_ID"
+      - name: Test Expected Inputs
+        env:
+          BRANCH: ${{ inputs.branch }}
+          INFRA_LIVE_REPO: ${{ inputs.infra_live_repo }}
+          WORKING_DIRECTORY: ${{ inputs.working_directory }}
+          TERRAGRUNT_COMMAND: ${{ inputs.terragrunt_command }}
+          MANAGEMENT_ACCOUNT: ${{ inputs.management_account }}
+          TEAM_ACCOUNT_NAMES: ${{ inputs.team_account_names }}
+        run: |
+          # Required Inputs
+          echo "BRANCH: $BRANCH"
+          echo "INFRA_LIVE_REPO: $INFRA_LIVE_REPO"
+          echo "WORKING_DIRECTORY: $WORKING_DIRECTORY"
+          echo "TERRAGRUNT_COMMAND: $TERRAGRUNT_COMMAND"
+          echo "MANAGEMENT_ACCOUNT: $MANAGEMENT_ACCOUNT"
+          echo "TEAM_ACCOUNT_NAMES: $TEAM_ACCOUNT_NAMES"
