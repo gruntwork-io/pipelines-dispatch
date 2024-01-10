@@ -2,6 +2,10 @@ name: TEST Pipelines Execute
 on:
   workflow_dispatch:
     inputs:
+      distinct_id:
+          description: "A distinct ID for this workflow run"
+          required: true
+          type: string
       branch:
         description: "The branch in the infrastructure-live repo in which to run the command"
         required: true

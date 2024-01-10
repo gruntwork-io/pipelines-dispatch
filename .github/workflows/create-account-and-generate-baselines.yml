@@ -3,6 +3,10 @@ name: TEST Create Account and Generate Baselines
 on:
   workflow_dispatch:
     inputs:
+      distinct_id:
+        description: "A distinct ID for this workflow run"
+        required: true
+        type: string
       management_account:
         description: "Management Account"
         required: true
