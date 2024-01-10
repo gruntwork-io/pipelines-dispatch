@@ -65,7 +65,7 @@ runs:
       if: ${{ !contains(fromJSON('["AccountRequested", "AccountAdded", "TeamAccountsRequested", "TeamAccountsAdded"]'), inputs.change_type)}}
       env:
         GH_TOKEN: ${{ inputs.infra_pipelines_token }}
-      uses: codex-/return-dispatch@v1.10.0
+      uses: codex-/return-dispatch@v1.12.0
       id: return_dispatch
       with:
         token: ${{ inputs.infra_pipelines_token }}
@@ -87,7 +87,7 @@ runs:
       if: ${{ inputs.change_type == 'AccountRequested' }}
       env:
         GH_TOKEN: ${{ inputs.infra_pipelines_token }}
-      uses: codex-/return-dispatch@v1.10.0
+      uses: codex-/return-dispatch@v1.12.0
       id: return_dispatch_acct_req
       with:
         token: ${{ inputs.infra_pipelines_token }}
@@ -108,7 +108,7 @@ runs:
       if: ${{ inputs.change_type == 'TeamAccountsRequested' }}
       env:
         GH_TOKEN: ${{ inputs.infra_pipelines_token }}
-      uses: codex-/return-dispatch@v1.10.0
+      uses: codex-/return-dispatch@v1.12.0
       id: return_dispatch_team_accts_req
       with:
         token: ${{ inputs.infra_pipelines_token }}
@@ -129,7 +129,7 @@ runs:
       if: ${{ inputs.change_type == 'AccountAdded' }}
       env:
         GH_TOKEN: ${{ inputs.infra_pipelines_token }}
-      uses: codex-/return-dispatch@v1.10.0
+      uses: codex-/return-dispatch@v1.12.0
       id: return_dispatch_acct_add
       with:
         token: ${{ inputs.infra_pipelines_token }}
@@ -150,7 +150,7 @@ runs:
       if: ${{ inputs.change_type == 'TeamAccountsAdded' }}
       env:
         GH_TOKEN: ${{ inputs.infra_pipelines_token }}
-      uses: codex-/return-dispatch@v1.10.0
+      uses: codex-/return-dispatch@v1.12.0
       id: return_dispatch_team_accts_add
       with:
         token: ${{ inputs.infra_pipelines_token }}
