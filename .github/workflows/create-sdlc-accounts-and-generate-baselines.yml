@@ -3,6 +3,10 @@ name: TEST Create SDLC Accounts and Generate Baseline PR
 on:
   workflow_dispatch:
     inputs:
+      distinct_id:
+        description: "A distinct ID for this workflow run"
+        required: true
+        type: string
       branch:
         description: "The branch in the infrastructure-live repo in which to run the command"
         required: true
