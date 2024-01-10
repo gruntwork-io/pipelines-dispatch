@@ -73,15 +73,16 @@ runs:
         repo: ${{ inputs.repo }}
         owner: ${{ inputs.repo_owner }}
         workflow: terragrunt-executor.yml
-        workflow_inputs: '{
-          "account": "${{ inputs.account_id }}",
-          "branch": "${{ inputs.branch }}",
-          "infra_live_repo": "${{ github.repository }}",
-          "working_directory": "${{ inputs.working_directory }}",
-          "terragrunt_command": "${{ inputs.command }} ${{ inputs.args }}",
-          "pipelines_change_type": "${{ inputs.change_type }}",
-          "child_account_id": "${{ fromJSON(inputs.additional_data).ChildAccountId }}"
-          }'
+        workflow_inputs: |
+          {
+            "account": "${{ inputs.account_id }}",
+            "branch": "${{ inputs.branch }}",
+            "infra_live_repo": "${{ github.repository }}",
+            "working_directory": "${{ inputs.working_directory }}",
+            "terragrunt_command": "${{ inputs.command }} ${{ inputs.args }}",
+            "pipelines_change_type": "${{ inputs.change_type }}",
+            "child_account_id": "${{ fromJSON(inputs.additional_data).ChildAccountId }}"
+          }
     - name: Dispatch account-requested workflow and get the run ID
       if: ${{ inputs.change_type == 'AccountRequested' }}
       env:
@@ -94,14 +95,15 @@ runs:
         repo: ${{ inputs.repo }}
         owner: ${{ inputs.repo_owner }}
         workflow: create-account-and-generate-baselines.yml
-        workflow_inputs: '{
-          "management_account": "${{ inputs.account_id }}",
-          "new_account_name": "${{ fromJSON(inputs.additional_data).AccountName }}",
-          "branch": "${{ inputs.branch }}",
-          "infra_live_repo": "${{ github.repository }}",
-          "working_directory": "${{ inputs.working_directory }}",
-          "terragrunt_command": "${{ inputs.command }} ${{ inputs.args }}"
-          }'
+        workflow_inputs: |
+          {
+            "management_account": "${{ inputs.account_id }}",
+            "new_account_name": "${{ fromJSON(inputs.additional_data).AccountName }}",
+            "branch": "${{ inputs.branch }}",
+            "infra_live_repo": "${{ github.repository }}",
+            "working_directory": "${{ inputs.working_directory }}",
+            "terragrunt_command": "${{ inputs.command }} ${{ inputs.args }}"
+          }
     - name: Dispatch team-accounts-requested workflow and get the run ID
       if: ${{ inputs.change_type == 'TeamAccountsRequested' }}
       env:
@@ -114,14 +116,15 @@ runs:
         repo: ${{ inputs.repo }}
         owner: ${{ inputs.repo_owner }}
         workflow: create-sdlc-accounts-and-generate-baselines.yml
-        workflow_inputs: '{
-          "management_account": "${{ inputs.account_id }}",
-          "branch": "${{ inputs.branch }}",
-          "infra_live_repo": "${{ github.repository }}",
-          "working_directory": "${{ inputs.working_directory }}",
-          "terragrunt_command": "${{ inputs.command }} ${{ inputs.args }}",
-          "team_account_names": "${{ fromJSON(inputs.additional_data).TeamAccountNames }}"
-          }'
+        workflow_inputs: |
+          {
+            "management_account": "${{ inputs.account_id }}",
+            "branch": "${{ inputs.branch }}",
+            "infra_live_repo": "${{ github.repository }}",
+            "working_directory": "${{ inputs.working_directory }}",
+            "terragrunt_command": "${{ inputs.command }} ${{ inputs.args }}",
+            "team_account_names": "${{ fromJSON(inputs.additional_data).TeamAccountNames }}"
+          }
     - name: Dispatch account-added workflow and get the run ID
       if: ${{ inputs.change_type == 'AccountAdded' }}
       env:
@@ -134,14 +137,15 @@ runs:
         repo: ${{ inputs.repo }}
         owner: ${{ inputs.repo_owner }}
         workflow: apply-new-account-baseline.yml
-        workflow_inputs: '{
-          "management_account": "${{ inputs.account_id }}",
-          "child_account": "${{ fromJSON(inputs.additional_data).ChildAccountId }}",
-          "branch": "${{ inputs.branch }}",
-          "infra_live_repo": "${{ github.repository }}",
-          "working_directory": "${{ inputs.working_directory }}",
-          "terragrunt_command": "${{ inputs.command }} ${{ inputs.args }}"
-          }'
+        workflow_inputs: |
+          {
+            "management_account": "${{ inputs.account_id }}",
+            "child_account": "${{ fromJSON(inputs.additional_data).ChildAccountId }}",
+            "branch": "${{ inputs.branch }}",
+            "infra_live_repo": "${{ github.repository }}",
+            "working_directory": "${{ inputs.working_directory }}",
+            "terragrunt_command": "${{ inputs.command }} ${{ inputs.args }}"
+          }
     - name: Dispatch team-accounts-added workflow and get the run ID
       if: ${{ inputs.change_type == 'TeamAccountsAdded' }}
       env:
@@ -154,14 +158,15 @@ runs:
         repo: ${{ inputs.repo }}
         owner: ${{ inputs.repo_owner }}
         workflow: apply-new-sdlc-accounts-baseline.yml
-        workflow_inputs: '{
-          "management_account": "${{ inputs.account_id }}",
-          "branch": "${{ inputs.branch }}",
-          "infra_live_repo": "${{ github.repository }}",
-          "working_directory": "${{ inputs.working_directory }}",
-          "terragrunt_command": "${{ inputs.command }} ${{ inputs.args }}",
-          "team_account_data": ${{ toJSON(inputs.additional_data) }}
-          }'
+        workflow_inputs: |
+          {
+            "management_account": "${{ inputs.account_id }}",
+            "branch": "${{ inputs.branch }}",
+            "infra_live_repo": "${{ github.repository }}",
+            "working_directory": "${{ inputs.working_directory }}",
+            "terragrunt_command": "${{ inputs.command }} ${{ inputs.args }}",
+            "team_account_data": ${{ toJSON(inputs.additional_data) }}
+          }
 
     # Await default workflow run
     - name: Await Run ID ${{ steps.return_dispatch.outputs.run_id }}
