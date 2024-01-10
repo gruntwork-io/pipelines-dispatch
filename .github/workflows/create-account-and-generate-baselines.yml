@@ -35,6 +35,11 @@ jobs:
     runs-on: ubuntu-latest
 
     steps:
+      - name: echo distinct ID ${{ github.event.inputs.distinct_id }}
+        env:
+          DISTINCT_ID: ${{ github.event.inputs.distinct_id }}
+        run: echo "$DISTINCT_ID"
+
       - name: Test Expected Inputs
         env:
           BRANCH: ${{ inputs.branch }}
