@@ -13,6 +13,8 @@ jobs:
     runs-on: ubuntu-latest
 
     strategy:
+      # This is to avoid rate limiting issues.
+      max-parallel: 2
       matrix:
         change_type:
             - ModuleChanged
