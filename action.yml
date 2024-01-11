@@ -75,6 +75,7 @@ runs:
         ARGS: ${{ inputs.args }}
         CHILD_ACCOUNT_ID: ${{ fromJSON(inputs.additional_data).ChildAccountId }}
         TEAM_ACCOUNT_NAMES: "${{ toJSON(fromJSON(inputs.additional_data).TeamAccountNames) }}"
+        TEAM_ACCOUNT_DATA: ${{ inputs.additional_data }}
       run: |
         if [[ "$CHANGE_TYPE" == "AccountRequested" ]]; then
           echo "workflow=create-account-and-generate-baselines.yml" >> "$GITHUB_OUTPUT"
