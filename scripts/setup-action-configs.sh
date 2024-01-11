@@ -64,7 +64,7 @@ handle_account_request() {
             "terragrunt_command": $terragrunt_command
         }'
     )"
-    if [[ -n "$pipelines_auth_role" ]]; then
+    if [[ -n "${pipelines_auth_role:-}" ]]; then
         workflow_inputs="$(append_presigned_caller_identity_token "$workflow_inputs")"
     fi
     echo "workflow_inputs=$workflow_inputs" >> "$GITHUB_OUTPUT"
@@ -96,7 +96,7 @@ handle_account_added() {
             "terragrunt_command": $terragrunt_command
         }'
     )"
-    if [[ -n "$pipelines_auth_role" ]]; then
+    if [[ -n "${pipelines_auth_role:-}" ]]; then
         workflow_inputs="$(append_presigned_caller_identity_token "$workflow_inputs")"
     fi
     echo "workflow_inputs=$workflow_inputs" >> "$GITHUB_OUTPUT"
@@ -126,7 +126,7 @@ handle_team_accounts_requested() {
             "terragrunt_command": $terragrunt_command
         }'
     )"
-    if [[ -n "$pipelines_auth_role" ]]; then
+    if [[ -n "${pipelines_auth_role:-}" ]]; then
         workflow_inputs="$(append_presigned_caller_identity_token "$workflow_inputs")"
     fi
     echo "workflow_inputs=$workflow_inputs" >> "$GITHUB_OUTPUT"
@@ -158,7 +158,7 @@ handle_team_accounts_added() {
             "team_account_names": $team_account_names
         }'
     )
-    if [[ -n "$pipelines_auth_role" ]]; then
+    if [[ -n "${pipelines_auth_role:-}" ]]; then
         workflow_inputs="$(append_presigned_caller_identity_token "$workflow_inputs")"
     fi
     echo "workflow_inputs=$workflow_inputs" >> "$GITHUB_OUTPUT"
@@ -192,7 +192,7 @@ handle_default() {
             "child_account_id": $child_account_id
         }'
     )
-    if [[ -n "$pipelines_auth_role" ]]; then
+    if [[ -n "${pipelines_auth_role:-}" ]]; then
         workflow_inputs="$(append_presigned_caller_identity_token "$workflow_inputs")"
     fi
     echo "workflow_inputs=$workflow_inputs" >> "$GITHUB_OUTPUT"
