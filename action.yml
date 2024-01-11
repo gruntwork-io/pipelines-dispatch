@@ -115,7 +115,7 @@ runs:
         PIPELINES_AUTH_ROLE: ${{ inputs.pipelines_auth_role }}
         TEAM_ACCOUNT_NAMES: "${{ toJSON(fromJSON(inputs.additional_data).TeamAccountNames) }}"
         TEAM_ACCOUNT_DATA: ${{ inputs.additional_data }}
-      run: ./scripts/setup-action-configurations.sh
+      run: ./scripts/setup-action-configs.sh
 
     - name: Dispatch default workflow and get the run ID
       env:
