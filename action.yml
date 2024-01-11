@@ -113,12 +113,14 @@ runs:
         ARGS: ${{ inputs.args }}
         CHILD_ACCOUNT_ID: ${{ fromJSON(inputs.additional_data).ChildAccountId }}
         PIPELINES_AUTH_ROLE: ${{ inputs.pipelines_auth_role }}
+        TEAM_ACCOUNT_NAMES: "${{ toJSON(fromJSON(inputs.additional_data).TeamAccountNames) }}"
+        TEAM_ACCOUNT_DATA: ${{ inputs.additional_data }}
       run: ./scripts/setup-action-configurations.sh
 
     - name: Dispatch default workflow and get the run ID
       env:
         GH_TOKEN: ${{ inputs.infra_pipelines_token }}
-      uses: codex-/return-dispatch@v1.10.0
+      uses: codex-/return-dispatch@v1.12.0
       id: return_dispatch
       with:
         token: ${{ inputs.infra_pipelines_token }}
@@ -150,7 +152,7 @@ runs:
         ACCOUNT_ID: ${{ inputs.account_id }}
         REPO: ${{ inputs.repo }}
         REPO_OWNER: ${{ inputs.repo_owner }}
-      run: echo "::notice ::Completed $COMMAND for $WORKING_DIR in acct $ACC0UNT_ID%0AFor details see https://github.com/$REPO_OWNER/$REPO/actions/runs/${{ steps.return_dispatch.outputs.run_id }}"
+      run: echo "::notice ::Completed $COMMAND for $WORKING_DIR in acct $ACCOUNT_ID%0AFor details see https://github.com/$REPO_OWNER/$REPO/actions/runs/${{ steps.return_dispatch.outputs.run_id }}"
 
     - name: Get Job ID & Terragrunt Run URL
       if: ${{ always() }} # This ensures this step always runs regardless of failure of previous step

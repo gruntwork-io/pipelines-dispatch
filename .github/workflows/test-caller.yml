@@ -1,0 +1,61 @@
+name: Test Trigger Workflow
+
+on:
+  workflow_dispatch:
+  pull_request:
+    types:
+      - opened
+      - synchronize
+      - reopened
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+
+    strategy:
+      # This is to avoid rate limiting issues.
+      max-parallel: 2
+      matrix:
+        change_type:
+            - ModuleChanged
+            - ModuleDeleted
+            - ModuleAdded
+            - ModulesAdded
+            - EnvCommonChanged
+            - EnvCommonDeleted
+            - EnvCommonAdded
+            - AccountRequested
+            - TeamAccountsRequested
+            - AccountAdded
+            - TeamAccountsAdded
+            - AccountChanged
+            - PipelinesPermissionAdded
+            - PipelinesPermissionChanged
+            - PipelinesPermissionDeleted
+            - PipelinesEnvCommonPermissionAdded
+            - PipelinesEnvCommonPermissionChanged
+            - PipelinesEnvCommonPermissionDeleted
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Trigger action.yml workflow
+        uses: "./"
+        with:
+          account_id: "123"
+          repo: pipelines-dispatch
+          repo_owner: gruntwork-io
+          branch: ${{ github.head_ref || github.ref_name }}
+          working_directory: "."
+          command: "command"
+          args: "args"
+          infra_pipelines_token: ${{ secrets.GITHUB_TOKEN }}
+          infra_live_token: ${{ secrets.GITHUB_TOKEN }}
+          change_type: ${{ matrix.change_type }}
+          additional_data: |
+            {
+              "AccountName": "new_account_name",
+              "ChildAccountId": "child_account_id",
+              "TeamAccountNames": ["team_account_names"]
+            }
+          actor: "actor"
