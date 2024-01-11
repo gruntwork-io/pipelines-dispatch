@@ -1,0 +1,65 @@
+name: TEST Apply SDLC Account Baselines
+
+on:
+  workflow_dispatch:
+    inputs:
+      distinct_id:
+        description: "A distinct ID for this workflow run"
+        required: true
+        type: string
+      branch:
+        description: "The branch in infra-live-central in which to run the terragrunt command"
+        required: true
+        type: string
+      management_account:
+        description: "The AWS Account ID of the Control Tower Management Account"
+        required: true
+        type: string
+      terragrunt_command:
+        type: string
+        description: "The terragrunt command to run"
+        required: true
+        default: "plan"
+      infra_live_repo:
+        type: string
+        description: "The infrastructure live repo on which to run terragrunt"
+        required: true
+      team_account_data:
+        type: string
+        description: "JSON string representation of the team account data"
+        required: true
+      working_directory:
+        description: "The folder path in which terragrunt will execute"
+        required: true
+        type: string
+
+defaults:
+  run:
+    shell: bash
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: echo distinct ID ${{ github.event.inputs.distinct_id }}
+        env:
+          DISTINCT_ID: ${{ github.event.inputs.distinct_id }}
+        run: echo "$DISTINCT_ID"
+
+      - name: Test Expected Inputs
+        env:
+          BRANCH: ${{ inputs.branch }}
+          INFRA_LIVE_REPO: ${{ inputs.infra_live_repo }}
+          WORKING_DIRECTORY: ${{ inputs.working_directory }}
+          TERRAGRUNT_COMMAND: ${{ inputs.terragrunt_command }}
+          MANAGEMENT_ACCOUNT: ${{ inputs.management_account }}
+          TEAM_ACCOUNT_DATA: ${{ inputs.team_account_data }}
+        run: |
+          # Required Inputs
+          echo "BRANCH: $BRANCH"
+          echo "INFRA_LIVE_REPO: $INFRA_LIVE_REPO"
+          echo "WORKING_DIRECTORY: $WORKING_DIRECTORY"
+          echo "TERRAGRUNT_COMMAND: $TERRAGRUNT_COMMAND"
+          echo "MANAGEMENT_ACCOUNT: $MANAGEMENT_ACCOUNT"
+          echo "TEAM_ACCOUNT_DATA: $TEAM_ACCOUNT_DATA"

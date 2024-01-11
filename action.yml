@@ -172,7 +172,7 @@ runs:
     - name: Dispatch default workflow and get the run ID
       env:
         GH_TOKEN: ${{ inputs.infra_pipelines_token }}
-      uses: codex-/return-dispatch@v1.10.0
+      uses: codex-/return-dispatch@v1.12.0
       id: return_dispatch
       with:
         token: ${{ inputs.infra_pipelines_token }}
