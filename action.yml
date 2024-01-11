@@ -205,7 +205,7 @@ runs:
         ACCOUNT_ID: ${{ inputs.account_id }}
         REPO: ${{ inputs.repo }}
         REPO_OWNER: ${{ inputs.repo_owner }}
-      run: echo "::notice ::Completed $COMMAND for $WORKING_DIR in acct $ACC0UNT_ID%0AFor details see https://github.com/$REPO_OWNER/$REPO/actions/runs/${{ steps.return_dispatch.outputs.run_id }}"
+      run: echo "::notice ::Completed $COMMAND for $WORKING_DIR in acct $ACCOUNT_ID%0AFor details see https://github.com/$REPO_OWNER/$REPO/actions/runs/${{ steps.return_dispatch.outputs.run_id }}"
 
     - name: Get Job ID & Terragrunt Run URL
       if: ${{ always() }} # This ensures this step always runs regardless of failure of previous step
