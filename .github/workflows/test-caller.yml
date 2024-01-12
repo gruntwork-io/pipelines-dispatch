@@ -1,5 +1,22 @@
 name: Test Trigger Workflow
 
+# This workflow tests the `pipepines-dispatch` in a limited fashion.
+
+# It does this by triggering the `action.yml` workflow, and then checking that the
+# JSON payload sent to the correct workflow has the correct inputs set.
+
+## Limitations
+
+# When testing token presigning it test that that the pipelines-dispatch action correctly invokes the pipelines CLI,
+# and appends the stdout of that operation to the JSON payload sent to the correct workflow.
+
+# It does not test that the pipelines CLI is correctly installed (as it doesn't bother to actually install it as that
+# would require using a token to install the pipelines CLI), or that the `presigned_caller_identity` value is valid
+# (since that requires a valid AWS account).
+
+# Instead, it uses a simple `pipelines` script that just echos a fake token, and tests that the
+# output is set correctly in the JSON payload in the workflow it invokes.
+
 on:
   workflow_dispatch:
   pull_request:
