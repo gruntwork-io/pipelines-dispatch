@@ -32,6 +32,10 @@ on:
         type: string
         description: "The infrastructure live repo on which to run terragrunt"
         required: true
+      presigned_caller_identity:
+        description: "The presigned URL sent by the calling account"
+        required: false
+        type: string
 
 defaults:
   run:

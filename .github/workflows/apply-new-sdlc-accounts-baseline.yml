@@ -32,6 +32,10 @@ on:
         description: "The folder path in which terragrunt will execute"
         required: true
         type: string
+      presigned_caller_identity:
+        description: "The presigned URL sent by the calling account"
+        required: false
+        type: string
 
 defaults:
   run:

@@ -52,6 +52,10 @@ on:
         description: "The AWS Account ID of the child account"
         required: false
         type: string
+      presigned_caller_identity:
+        description: "The presigned URL sent by the calling account"
+        required: false
+        type: string
 
 defaults:
   run:

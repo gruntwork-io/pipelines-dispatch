@@ -57,6 +57,10 @@ inputs:
   actor:
     description: "The github actor responsible for the change"
     required: true
+  presign_token:
+    description: "Presign a `GetCallerIdentity` request to authenticate this repo to the `infrastructure-pipelines` repo"
+    required: false
+    default: "false"
   pipelines_token:
     description: "The GitHub token for downloading the Gruntwork Pipelines binary"
     required: false
@@ -75,25 +79,53 @@ inputs:
 runs:
   using: "composite"
   steps:
+    - name: Validate inputs for presign if enabled
+      shell: bash
+      env:
+        PRESIGN_TOKEN: ${{ inputs.presign_token }}
+        PIPELINES_TOKEN: ${{ inputs.pipelines_token }}
+        PIPELINES_AUTH_ROLE: ${{ inputs.pipelines_auth_role }}
+      run: |
+        if [[ $PRESIGN_TOKEN != "true" ]]; then
+          exit 0
+        fi
+        if [[ $PIPELINES_TOKEN == "" ]]; then
+          echo "Presign token is true, but pipelines token is not set."
+          echo "The pipelines token is required to download the pipelines binary to presign the `GetCallerIdentity` request."
+          exit 1
+        fi
+        if [[ $PIPELINES_AUTH_ROLE == "" ]]; then
+          echo "Presign token is true, but pipelines auth role is not set."
+          echo "The pipelines auth role is required to authenticate the calling repo to the infrastructure-pipelines repo."
+          exit 1
+        fi
+
+    # We only need to install the pipelines CLI if we're presigning a token
+    # and we have a token to use to download the CLI. Clients might decide to
+    # install the CLI before running this action, in which case we don't need
+    # to do it here.
     - name: Download Pipelines CLI
-      if: ${{ inputs.pipelines_token != '' }}
+      if: ${{ inputs.presign_token == 'true' && inputs.pipelines_token != '' }}
       uses: dsaltares/fetch-gh-release-asset@1.1.1
       with:
         repo: "gruntwork-io/pipelines-cli"
         version: "tags/${{ inputs.pipelines_cli_version }}"
         file: "pipelines_linux_amd64"
         target: "/tmp/pipelines"
-        token: ${{ inputs.token }}
+        token: ${{ inputs.pipelines_token }}
 
     - name: Install Pipelines CLI
-      if: ${{ inputs.pipelines_token != '' }}
+      if: ${{ inputs.presign_token == 'true' && inputs.pipelines_token != '' }}
       shell: bash
       run: |
         sudo mv /tmp/pipelines /usr/local/bin/pipelines
         sudo chmod +x /usr/local/bin/pipelines
 
+      # We only need to authenticate with AWS here if we're presigning a token
+      # and we have a role to assume to do so. Clients might decide to assume a role before
+      # running this action, in which case we don't need to do it here.
     - name: Authenticate with AWS
-      if: ${{ inputs.pipelines_auth_role != '' }}
+      if: ${{ inputs.presign_token == 'true' && inputs.pipelines_auth_role != '' }}
       uses: aws-actions/configure-aws-credentials@v4
       with:
         role-to-assume: arn:aws:iam::${{ inputs.account_id }}:role/${{ inputs.pipelines_auth_role }}
@@ -112,7 +144,7 @@ runs:
         COMMAND: ${{ inputs.command }}
         ARGS: ${{ inputs.args }}
         CHILD_ACCOUNT_ID: ${{ fromJSON(inputs.additional_data).ChildAccountId }}
-        PIPELINES_AUTH_ROLE: ${{ inputs.pipelines_auth_role }}
+        PRESIGN_TOKEN: ${{ inputs.presign_token }}
         TEAM_ACCOUNT_NAMES: "${{ toJSON(fromJSON(inputs.additional_data).TeamAccountNames) }}"
         TEAM_ACCOUNT_DATA: ${{ inputs.additional_data }}
       run: ./scripts/setup-action-configs.sh

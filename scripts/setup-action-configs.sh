@@ -16,7 +16,7 @@ IFS=$'\n\t'
 NEW_ACCOUNT_NAME="${NEW_ACCOUNT_NAME:-}"
 TEAM_ACCOUNT_NAMES="${TEAM_ACCOUNT_NAMES:-}"
 CHILD_ACCOUNT_ID="${CHILD_ACCOUNT_ID:-}"
-PIPELINES_AUTH_ROLE="${PIPELINES_AUTH_ROLE:-}"
+PRESIGN_TOKEN="${PRESIGN_TOKEN:-false}"
 TEAM_ACCOUNT_DATA="${TEAM_ACCOUNT_DATA:-}"
 
 check_pipeline_is_installed() {
@@ -46,7 +46,7 @@ handle_account_request() {
     readonly infra_live_repo="$4"
     readonly working_directory="$5"
     readonly terragrunt_command="$6"
-    readonly pipelines_auth_role="$7"
+    readonly presign_token="$7"
 
     echo "workflow=create-account-and-generate-baselines.yml" >> "$GITHUB_OUTPUT"
     workflow_inputs="$(jq -c -n \
@@ -65,7 +65,7 @@ handle_account_request() {
             "terragrunt_command": $terragrunt_command
         }'
     )"
-    if [[ -n "${pipelines_auth_role:-}" ]]; then
+    if [[ $presign_token == "true" ]]; then
         workflow_inputs="$(append_presigned_caller_identity_token "$workflow_inputs")"
     fi
     echo "workflow_inputs=$workflow_inputs" >> "$GITHUB_OUTPUT"
@@ -78,7 +78,7 @@ handle_account_added() {
     readonly infra_live_repo="$4"
     readonly working_directory="$5"
     readonly terragrunt_command="$6"
-    readonly pipelines_auth_role="$7"
+    readonly presign_token="$7"
 
     echo "workflow=apply-new-account-baseline.yml" >> "$GITHUB_OUTPUT"
     workflow_inputs="$(jq -c -n \
@@ -97,7 +97,7 @@ handle_account_added() {
             "terragrunt_command": $terragrunt_command
         }'
     )"
-    if [[ -n "${pipelines_auth_role:-}" ]]; then
+    if [[ $presign_token == "true" ]]; then
         workflow_inputs="$(append_presigned_caller_identity_token "$workflow_inputs")"
     fi
     echo "workflow_inputs=$workflow_inputs" >> "$GITHUB_OUTPUT"
@@ -110,7 +110,7 @@ handle_team_accounts_requested() {
     readonly working_directory="$4"
     readonly terragrunt_command="$5"
     readonly team_account_names="$6"
-    readonly pipelines_auth_role="$7"
+    readonly presign_token="$7"
 
     echo "workflow=create-sdlc-accounts-and-generate-baselines.yml" >> "$GITHUB_OUTPUT"
     workflow_inputs="$(jq -c -n \
@@ -129,7 +129,7 @@ handle_team_accounts_requested() {
             "team_account_names": $team_account_names
         }'
     )"
-    if [[ -n "${pipelines_auth_role:-}" ]]; then
+    if [[ $presign_token == "true" ]]; then
         workflow_inputs="$(append_presigned_caller_identity_token "$workflow_inputs")"
     fi
     echo "workflow_inputs=$workflow_inputs" >> "$GITHUB_OUTPUT"
@@ -142,7 +142,7 @@ handle_team_accounts_added() {
     readonly working_directory="$4"
     readonly terragrunt_command="$5"
     readonly team_account_data="$6"
-    readonly pipelines_auth_role="$7"
+    readonly presign_token="$7"
 
     echo "workflow=apply-new-sdlc-accounts-baseline.yml" >> "$GITHUB_OUTPUT"
     workflow_inputs=$(jq -c -n \
@@ -161,7 +161,7 @@ handle_team_accounts_added() {
             "team_account_data": $team_account_data
         }'
     )
-    if [[ -n "${pipelines_auth_role:-}" ]]; then
+    if [[ $presign_token == "true" ]]; then
         workflow_inputs="$(append_presigned_caller_identity_token "$workflow_inputs")"
     fi
     echo "workflow_inputs=$workflow_inputs" >> "$GITHUB_OUTPUT"
@@ -195,7 +195,7 @@ handle_default() {
             "child_account_id": $child_account_id
         }'
     )
-    if [[ -n "${pipelines_auth_role:-}" ]]; then
+    if [[ $presign_token == "true" ]]; then
         workflow_inputs="$(append_presigned_caller_identity_token "$workflow_inputs")"
     fi
     echo "workflow_inputs=$workflow_inputs" >> "$GITHUB_OUTPUT"
@@ -203,18 +203,18 @@ handle_default() {
 
 case "$CHANGE_TYPE" in
     AccountRequested)
-        handle_account_request "$MANAGEMENT_ACCOUNT" "$NEW_ACCOUNT_NAME" "$BRANCH" "$INFRA_LIVE_REPO" "$WORKING_DIRECTORY" "$COMMAND $ARGS" "$PIPELINES_AUTH_ROLE"
+        handle_account_request "$MANAGEMENT_ACCOUNT" "$NEW_ACCOUNT_NAME" "$BRANCH" "$INFRA_LIVE_REPO" "$WORKING_DIRECTORY" "$COMMAND $ARGS" "$PRESIGN_TOKEN"
         ;;
     AccountAdded)
-        handle_account_added "$MANAGEMENT_ACCOUNT" "$NEW_ACCOUNT_NAME" "$BRANCH" "$INFRA_LIVE_REPO" "$WORKING_DIRECTORY" "$COMMAND $ARGS" "$PIPELINES_AUTH_ROLE"
+        handle_account_added "$MANAGEMENT_ACCOUNT" "$NEW_ACCOUNT_NAME" "$BRANCH" "$INFRA_LIVE_REPO" "$WORKING_DIRECTORY" "$COMMAND $ARGS" "$PRESIGN_TOKEN"
         ;;
     TeamAccountsRequested)
-        handle_team_accounts_requested "$MANAGEMENT_ACCOUNT" "$BRANCH" "$INFRA_LIVE_REPO" "$WORKING_DIRECTORY" "$COMMAND $ARGS" "$TEAM_ACCOUNT_NAMES" "$PIPELINES_AUTH_ROLE"
+        handle_team_accounts_requested "$MANAGEMENT_ACCOUNT" "$BRANCH" "$INFRA_LIVE_REPO" "$WORKING_DIRECTORY" "$COMMAND $ARGS" "$TEAM_ACCOUNT_NAMES" "$PRESIGN_TOKEN"
         ;;
     TeamAccountsAdded)
-        handle_team_accounts_added "$MANAGEMENT_ACCOUNT" "$BRANCH" "$INFRA_LIVE_REPO" "$WORKING_DIRECTORY" "$COMMAND $ARGS" "$TEAM_ACCOUNT_DATA" "$PIPELINES_AUTH_ROLE"
+        handle_team_accounts_added "$MANAGEMENT_ACCOUNT" "$BRANCH" "$INFRA_LIVE_REPO" "$WORKING_DIRECTORY" "$COMMAND $ARGS" "$TEAM_ACCOUNT_DATA" "$PRESIGN_TOKEN"
         ;;
     *)
-        handle_default "$MANAGEMENT_ACCOUNT" "$BRANCH" "$INFRA_LIVE_REPO" "$WORKING_DIRECTORY" "$COMMAND $ARGS" "$CHANGE_TYPE" "$CHILD_ACCOUNT_ID" "$PIPELINES_AUTH_ROLE"
+        handle_default "$MANAGEMENT_ACCOUNT" "$BRANCH" "$INFRA_LIVE_REPO" "$WORKING_DIRECTORY" "$COMMAND $ARGS" "$CHANGE_TYPE" "$CHILD_ACCOUNT_ID" "$PRESIGN_TOKEN"
         ;;
 esac

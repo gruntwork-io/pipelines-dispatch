@@ -32,6 +32,10 @@ on:
         type: string
         description: "The names of the team accounts to create"
         required: true
+      presigned_caller_identity:
+        description: "The presigned URL sent by the calling account"
+        required: false
+        type: string
 
 defaults:
   run:

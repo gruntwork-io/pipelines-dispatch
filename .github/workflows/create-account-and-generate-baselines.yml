@@ -25,6 +25,10 @@ on:
       terragrunt_command:
         description: "Terragrunt Command"
         required: true
+      presigned_caller_identity:
+        description: "The presigned URL sent by the calling account"
+        required: false
+        type: string
 
 defaults:
   run:
