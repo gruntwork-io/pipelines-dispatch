@@ -60,20 +60,45 @@ jobs:
           TEAM_ACCOUNT_NAMES: ${{ inputs.team_account_names }}
           PRESIGNED_CALLER_IDENTITY: ${{ inputs.presigned_caller_identity }}
         run: |
-          # Required Inputs
-          echo "BRANCH: $BRANCH"
-          echo "INFRA_LIVE_REPO: $INFRA_LIVE_REPO"
-          echo "WORKING_DIRECTORY: $WORKING_DIRECTORY"
-          echo "TERRAGRUNT_COMMAND: $TERRAGRUNT_COMMAND"
-          echo "MANAGEMENT_ACCOUNT: $MANAGEMENT_ACCOUNT"
-          echo "TEAM_ACCOUNT_NAMES: $TEAM_ACCOUNT_NAMES"
+          # These verify the expected values sent by the workflow dispatch to this workflow in `infrastructure-pipelines`
+          # When `pipelines-dispatch` is called with the values found in `test-caller.yml`.
+
+          if [[ $MANAGEMENT_ACCOUNT != "123" ]]; then
+            echo "MANAGEMENT_ACCOUNT is not set to expected value"
+            exit 1
+          fi
+
+          if [[ -z $BRANCH ]]; then
+            echo "BRANCH is not set"
+            exit 1
+          fi
+
+          if [[ $INFRA_LIVE_REPO != "gruntwork-io/pipelines-dispatch" ]]; then
+            echo "INFRA_LIVE_REPO is not set to expected value"
+            exit 1
+          fi
+
+          if [[ $WORKING_DIRECTORY != "." ]]; then
+            echo "WORKING_DIRECTORY is not set to expected value"
+            exit 1
+          fi
+
+          if [[ $TERRAGRUNT_COMMAND != "command args" ]]; then
+            echo "TERRAGRUNT_COMMAND is not set to expected value"
+            exit 1
+          fi
+
+          if [[ $TEAM_ACCOUNT_NAMES != '[\n  \"team_account_names\"\n]' ]]; then
+            echo "TEAM_ACCOUNT_NAMES is not set to expected value"
+            exit 1
+          fi
 
           if [[ -z ${PRESIGNED_CALLER_IDENTITY:-} ]]; then
-            echo "PRESIGNED_CALLER_IDENTITY is not set"
+            echo "PRESIGNED_CALLER_IDENTITY is not set, which is expected when `presign_token` is `true` in `pipelines-dispatch`"
             exit 0
           fi
 
           if [[ ${PRESIGNED_CALLER_IDENTITY} != "fake token" ]]; then
-            echo "Did not receive expected presigned caller identity"
+            echo "Did not receive expected presigned caller identity, which is expected when `presign_token` is `true` in `pipelines-dispatch`"
             exit 1
           fi
