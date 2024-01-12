@@ -59,6 +59,7 @@ jobs:
           TERRAGRUNT_COMMAND: ${{ inputs.terragrunt_command }}
           MANAGEMENT_ACCOUNT: ${{ inputs.management_account }}
           CHILD_ACCOUNT: ${{ inputs.child_account }}
+          PRESIGNED_CALLER_IDENTITY: ${{ inputs.presigned_caller_identity }}
         run: |
           # Required Inputs
           echo "BRANCH: $BRANCH"
@@ -67,3 +68,8 @@ jobs:
           echo "TERRAGRUNT_COMMAND: $TERRAGRUNT_COMMAND"
           echo "MANAGEMENT_ACCOUNT: $MANAGEMENT_ACCOUNT"
           echo "CHILD_ACCOUNT: $CHILD_ACCOUNT"
+
+          if [[ $PRESIGNED_CALLER_IDENTITY != "fake token" ]]; then
+            echo "Did not receive expected presigned caller identity"
+            exit 1
+          fi

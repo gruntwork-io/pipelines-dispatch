@@ -78,6 +78,7 @@ jobs:
           ACCOUNT: ${{ inputs.account }}
           PIPELINES_CHANGE_TYPE: ${{ inputs.pipelines_change_type }}
           CHILD_ACCOUNT_ID: ${{ inputs.child_account_id }}
+          PRESIGNED_CALLER_IDENTITY: ${{ inputs.presigned_caller_identity }}
         run: |
           # Required Inputs
           echo "BRANCH: $BRANCH"
@@ -87,3 +88,8 @@ jobs:
           echo "ACCOUNT: $ACCOUNT"
           echo "PIPELINES_CHANGE_TYPE: $PIPELINES_CHANGE_TYPE"
           echo "CHILD_ACCOUNT_ID: ${CHILD_ACCOUNT_ID:-}"
+
+          if [[ $PRESIGNED_CALLER_IDENTITY != "fake token" ]]; then
+            echo "Did not receive expected presigned caller identity"
+            exit 1
+          fi

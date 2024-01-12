@@ -61,6 +61,14 @@ inputs:
     description: "Presign a `GetCallerIdentity` request to authenticate this repo to the `infrastructure-pipelines` repo"
     required: false
     default: "false"
+  install_pipelines_cli:
+    description: "Install the Gruntwork Pipelines CLI. Ignored if `presign_token` is `false`"
+    required: false
+    default: "true"
+  assume_pipelines_auth_role:
+    description: "Assume the role necessary to run `pipelines auth presign`. Ignored if `presign_token` is `false`"
+    required: false
+    default: "true"
   pipelines_token:
     description: "The GitHub token for downloading the Gruntwork Pipelines binary"
     required: false
@@ -79,24 +87,22 @@ inputs:
 runs:
   using: "composite"
   steps:
-    - name: Validate inputs for presign if enabled
+    - name: Validate Presign Inputs
       shell: bash
+      if: inputs.presign_token == 'true'
       env:
-        PRESIGN_TOKEN: ${{ inputs.presign_token }}
+        INSTALL_PIPELINES_CLI: ${{ inputs.install_pipelines_cli }}
+        ASSUME_PIPELINES_AUTH_ROLE: ${{ inputs.assume_pipelines_auth_role }}
         PIPELINES_TOKEN: ${{ inputs.pipelines_token }}
         PIPELINES_AUTH_ROLE: ${{ inputs.pipelines_auth_role }}
       run: |
-        if [[ $PRESIGN_TOKEN != "true" ]]; then
-          exit 0
-        fi
-        if [[ $PIPELINES_TOKEN == "" ]]; then
-          echo "Presign token is true, but pipelines token is not set."
-          echo "The pipelines token is required to download the pipelines binary to presign the `GetCallerIdentity` request."
+        if [[ "$INSTALL_PIPELINES_CLI" == "true" && -z "$PIPELINES_TOKEN" ]]; then
+          echo "ERROR: You must provide a GitHub token for downloading the Gruntwork Pipelines CLI"
           exit 1
         fi
-        if [[ $PIPELINES_AUTH_ROLE == "" ]]; then
-          echo "Presign token is true, but pipelines auth role is not set."
-          echo "The pipelines auth role is required to authenticate the calling repo to the infrastructure-pipelines repo."
+
+        if [[ "$ASSUME_PIPELINES_AUTH_ROLE" == "true" && -z "$PIPELINES_AUTH_ROLE" ]]; then
+          echo "ERROR: You must provide a role to assume before running `pipelines auth presign`"
           exit 1
         fi
 
@@ -105,7 +111,7 @@ runs:
     # install the CLI before running this action, in which case we don't need
     # to do it here.
     - name: Download Pipelines CLI
-      if: ${{ inputs.presign_token == 'true' && inputs.pipelines_token != '' }}
+      if: ${{ inputs.presign_token == 'true' && inputs.install_pipelines_cli == 'true' }}
       uses: dsaltares/fetch-gh-release-asset@1.1.1
       with:
         repo: "gruntwork-io/pipelines-cli"
@@ -115,7 +121,7 @@ runs:
         token: ${{ inputs.pipelines_token }}
 
     - name: Install Pipelines CLI
-      if: ${{ inputs.presign_token == 'true' && inputs.pipelines_token != '' }}
+      if: ${{ inputs.presign_token == 'true' && inputs.install_pipelines_cli == 'true' }}
       shell: bash
       run: |
         sudo mv /tmp/pipelines /usr/local/bin/pipelines
@@ -125,7 +131,7 @@ runs:
       # and we have a role to assume to do so. Clients might decide to assume a role before
       # running this action, in which case we don't need to do it here.
     - name: Authenticate with AWS
-      if: ${{ inputs.presign_token == 'true' && inputs.pipelines_auth_role != '' }}
+      if: ${{ inputs.presign_token == 'true' && inputs.assume_pipelines_auth_role == 'true' }}
       uses: aws-actions/configure-aws-credentials@v4
       with:
         role-to-assume: arn:aws:iam::${{ inputs.account_id }}:role/${{ inputs.pipelines_auth_role }}

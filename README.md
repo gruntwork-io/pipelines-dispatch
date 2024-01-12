@@ -20,11 +20,13 @@ This GitHub Action, named "Pipelines Dispatch," is designed to dispatch Terragru
 
 If these inputs are provided, the action will download the `pipelines` binary and run `pipelines auth presign` to generate a presigned `GetCallerIdentity` request for the specified role and region. The presigned request will be passed to the `infrastructure-pipelines` workflow as an additional input. This is a useful, additional layer of security to ensure that the `infrastructure-pipelines` workflow is being called by a repo it trusts.
 
-- `presign_token` (optional): Determines if this action should generate a presigned `GetCallerIdentity` request. If not provided or set to a value other than `true`, the action will not generate a presigned request. If set, the inputs `pipelines_token` and `pipelines_auth_role` are required.
-- `pipelines_token` (optional): GitHub PAT to download `pipelines` binary. If not provided, the action will not install the binary. Will be ignored if `pipelines_token` is not provided or not `true`.
+- `presign_token` (optional): Determines if this action should generate a presigned `GetCallerIdentity` request. If not set to `true`, the action will not generate a presigned request for verification in `infrastructure-pipelines`.
+- `install_pipelines_cli` (optional): Determines if this action should download the `pipelines` CLI binary. Defaults to `true`. Ignored if `pipelines_token` is not `true`.
+- `assume_auth_role` (optional): Determines if this action should assume a role when running `pipelines auth presign`. Defaults to `true`. Ignored if `pipelines_token` is not `true`.
+- `pipelines_token` (optional): GitHub PAT to download `pipelines` binary. Ignored if `presign_token` and `install_pipelines_cli` are not `true`.
 - `pipelines_cli_version` (optional): The version of the `pipelines` binary to download. If not provided, a default version will be used.
-- `pipelines_auth_role` (optional): The IAM role to assume when running the `pipelines auth presign`. If not provided, the action will not assume a role. Will be ignored if `pipelines_token` is not provided or not `true`.
-- `pipelines_auth_region` (optional): The AWS region in which to perform the `pipelines auth presign`. If not provided, the `us-east-1` region will be used.
+- `pipelines_auth_role` (optional): The IAM role to assume when running the `pipelines auth presign`. Ignored if `presign_token` and `assume_auth_role` are not `true`.
+- `pipelines_auth_region` (optional): The AWS region in which to perform the `pipelines auth presign`. If not provided, the `us-east-1` region will be used. Ignored if `presign_token` and `assume_auth_role` are not `true`.
 
 ## Usage
 

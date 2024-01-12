@@ -17,27 +17,37 @@ jobs:
       max-parallel: 2
       matrix:
         change_type:
-            - ModuleChanged
-            - ModuleDeleted
-            - ModuleAdded
-            - ModulesAdded
-            - EnvCommonChanged
-            - EnvCommonDeleted
-            - EnvCommonAdded
-            - AccountRequested
-            - TeamAccountsRequested
-            - AccountAdded
-            - TeamAccountsAdded
-            - AccountChanged
-            - PipelinesPermissionAdded
-            - PipelinesPermissionChanged
-            - PipelinesPermissionDeleted
-            - PipelinesEnvCommonPermissionAdded
-            - PipelinesEnvCommonPermissionChanged
-            - PipelinesEnvCommonPermissionDeleted
+          - ModuleChanged
+          - ModuleDeleted
+          - ModuleAdded
+          - ModulesAdded
+          - EnvCommonChanged
+          - EnvCommonDeleted
+          - EnvCommonAdded
+          - AccountRequested
+          - TeamAccountsRequested
+          - AccountAdded
+          - TeamAccountsAdded
+          - AccountChanged
+          - PipelinesPermissionAdded
+          - PipelinesPermissionChanged
+          - PipelinesPermissionDeleted
+          - PipelinesEnvCommonPermissionAdded
+          - PipelinesEnvCommonPermissionChanged
+          - PipelinesEnvCommonPermissionDeleted
+        presign:
+          - 'true'
+          - 'false'
+
     steps:
       - name: Checkout repository
         uses: actions/checkout@v4
+
+      - name: Create fake pipelines binary
+        if: matrix.presign == 'true'
+        run: |
+          sudo echo 'echo "fake token"' > /usr/local/bin/pipelines
+          sudo chmod +x /usr/local/bin/pipelines
 
       - name: Trigger action.yml workflow
         uses: "./"
@@ -59,3 +69,6 @@ jobs:
               "TeamAccountNames": ["team_account_names"]
             }
           actor: "actor"
+          presign_token: ${{ matrix.presign }}
+          install_pipelines_cli: "false"
+          assume_pipelines_auth_role: "false"
