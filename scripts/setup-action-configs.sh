@@ -3,6 +3,8 @@
 set -euo pipefail
 IFS=$'\n\t'
 
+set -x
+
 # Required environment variables
 : "${CHANGE_TYPE:? "CHANGE_TYPE environment variable must be set"}"
 : "${MANAGEMENT_ACCOUNT:? "MANAGEMENT_ACCOUNT environment variable must be set"}"
