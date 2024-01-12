@@ -175,6 +175,7 @@ handle_default() {
     readonly terragrunt_command="$5"
     readonly pipelines_change_type="$6"
     readonly child_account_id="$7"
+    readonly presign_token="$8"
 
     echo "workflow=terragrunt-executor.yml" >> "$GITHUB_OUTPUT"
     workflow_inputs=$(jq -c -n \
