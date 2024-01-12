@@ -3,8 +3,6 @@
 set -euo pipefail
 IFS=$'\n\t'
 
-set -x
-
 # Required environment variables
 : "${CHANGE_TYPE:? "CHANGE_TYPE environment variable must be set"}"
 : "${MANAGEMENT_ACCOUNT:? "MANAGEMENT_ACCOUNT environment variable must be set"}"
@@ -38,7 +36,7 @@ append_presigned_caller_identity_token() {
     readonly workflow_inputs="$1"
 
     presigned_caller_identity="$(presign_caller_identity_token)"
-    echo "$workflow_inputs" | jq --arg presigned_caller_identity "$presigned_caller_identity" '. + {presigned_caller_identity: $presigned_caller_identity}'
+    echo "$workflow_inputs" | jq -c --arg presigned_caller_identity "$presigned_caller_identity" '. + {presigned_caller_identity: $presigned_caller_identity}'
 }
 
 handle_account_request() {
