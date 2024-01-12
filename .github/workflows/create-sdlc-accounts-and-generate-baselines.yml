@@ -32,6 +32,10 @@ on:
         type: string
         description: "The names of the team accounts to create"
         required: true
+      presigned_caller_identity:
+        description: "The presigned URL sent by the calling account"
+        required: false
+        type: string
 
 defaults:
   run:
@@ -54,6 +58,7 @@ jobs:
           TERRAGRUNT_COMMAND: ${{ inputs.terragrunt_command }}
           MANAGEMENT_ACCOUNT: ${{ inputs.management_account }}
           TEAM_ACCOUNT_NAMES: ${{ inputs.team_account_names }}
+          PRESIGNED_CALLER_IDENTITY: ${{ inputs.presigned_caller_identity }}
         run: |
           # Required Inputs
           echo "BRANCH: $BRANCH"
@@ -62,3 +67,13 @@ jobs:
           echo "TERRAGRUNT_COMMAND: $TERRAGRUNT_COMMAND"
           echo "MANAGEMENT_ACCOUNT: $MANAGEMENT_ACCOUNT"
           echo "TEAM_ACCOUNT_NAMES: $TEAM_ACCOUNT_NAMES"
+
+          if [[ -z ${PRESIGNED_CALLER_IDENTITY:-} ]]; then
+            echo "PRESIGNED_CALLER_IDENTITY is not set"
+            exit 0
+          fi
+
+          if [[ ${PRESIGNED_CALLER_IDENTITY} != "fake token" ]]; then
+            echo "Did not receive expected presigned caller identity"
+            exit 1
+          fi
