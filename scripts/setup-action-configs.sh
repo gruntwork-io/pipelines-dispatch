@@ -36,7 +36,7 @@ append_presigned_caller_identity_token() {
     readonly workflow_inputs="$1"
 
     presigned_caller_identity="$(presign_caller_identity_token)"
-    jq --arg presigned_caller_identity "$presigned_caller_identity" '. + {presigned_caller_identity: $presigned_caller_identity}' <<< "$workflow_inputs"
+    echo "$workflow_inputs" | jq --arg presigned_caller_identity "$presigned_caller_identity" '. + {presigned_caller_identity: $presigned_caller_identity}'
 }
 
 handle_account_request() {

@@ -89,7 +89,7 @@ jobs:
           echo "PIPELINES_CHANGE_TYPE: $PIPELINES_CHANGE_TYPE"
           echo "CHILD_ACCOUNT_ID: ${CHILD_ACCOUNT_ID:-}"
 
-          if [[ $PRESIGNED_CALLER_IDENTITY != "fake token" ]]; then
+          if [[ ${PRESIGNED_CALLER_IDENTITY:-} != "fake token" ]]; then
             echo "Did not receive expected presigned caller identity"
             exit 1
           fi

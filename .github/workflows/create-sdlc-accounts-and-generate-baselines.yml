@@ -68,7 +68,7 @@ jobs:
           echo "MANAGEMENT_ACCOUNT: $MANAGEMENT_ACCOUNT"
           echo "TEAM_ACCOUNT_NAMES: $TEAM_ACCOUNT_NAMES"
 
-          if [[ $PRESIGNED_CALLER_IDENTITY != "fake token" ]]; then
+          if [[ ${PRESIGNED_CALLER_IDENTITY:-} != "fake token" ]]; then
             echo "Did not receive expected presigned caller identity"
             exit 1
           fi
