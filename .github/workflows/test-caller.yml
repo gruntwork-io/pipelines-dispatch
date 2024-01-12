@@ -14,27 +14,14 @@ jobs:
 
     strategy:
       # This is to avoid rate limiting issues.
-      max-parallel: 2
+      max-parallel: 1
       matrix:
         change_type:
           - ModuleChanged
-          - ModuleDeleted
-          - ModuleAdded
-          - ModulesAdded
-          - EnvCommonChanged
-          - EnvCommonDeleted
-          - EnvCommonAdded
           - AccountRequested
           - TeamAccountsRequested
           - AccountAdded
           - TeamAccountsAdded
-          - AccountChanged
-          - PipelinesPermissionAdded
-          - PipelinesPermissionChanged
-          - PipelinesPermissionDeleted
-          - PipelinesEnvCommonPermissionAdded
-          - PipelinesEnvCommonPermissionChanged
-          - PipelinesEnvCommonPermissionDeleted
         presign:
           - 'true'
           - 'false'
