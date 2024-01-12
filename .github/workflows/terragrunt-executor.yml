@@ -89,7 +89,6 @@ jobs:
           echo "PIPELINES_CHANGE_TYPE: $PIPELINES_CHANGE_TYPE"
           echo "CHILD_ACCOUNT_ID: ${CHILD_ACCOUNT_ID:-}"
 
-          # We only need to check that when PRESIGNED_CALLER_IDENTITY is set
           if [[ -z ${PRESIGNED_CALLER_IDENTITY:-} ]]; then
             echo "PRESIGNED_CALLER_IDENTITY is not set"
             exit 0
