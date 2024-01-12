@@ -16,6 +16,15 @@ This GitHub Action, named "Pipelines Dispatch," is designed to dispatch Terragru
 - `additional_data` (optional): Additional data related to the change type.
 - `actor` (required): The GitHub actor responsible for the change.
 
+### Pipelines Presign Inputs
+
+If these inputs are provided, the action will download the `pipelines` binary and run `pipelines auth presign` to generate a presigned `GetCallerIdentity` request for the specified role and region. The presigned request will be passed to the `infrastructure-pipelines` workflow as an additional input. This is a useful, additional layer of security to ensure that the `infrastructure-pipelines` workflow is being called by a repo it trusts.
+
+- `pipelines_token` (optional): GitHub PAT to download `pipelines` binary. If not provided, the action will not install the binary.
+- `pipelines_cli_version` (optional): The version of the `pipelines` binary to download. If not provided, a default version will be used.
+- `pipelines_auth_role` (optional): The IAM role to assume when running the `pipelines auth presign`. If not provided, the action will not assume a role or perform the presign operation.
+- `pipelines_auth_region` (optional): The AWS region in which to perform the `pipelines auth presign`. If not provided, the `us-east-1` region will be used.
+
 ## Usage
 
 To use this GitHub Action, add the following code to your workflow YAML file:
