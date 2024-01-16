@@ -10,9 +10,9 @@ IFS=$'\n\t'
 : "${INFRA_LIVE_REPO:? "INFRA_LIVE_REPO environment variable must be set"}"
 : "${WORKING_DIRECTORY:? "WORKING_DIRECTORY environment variable must be set"}"
 : "${COMMAND:? "COMMAND environment variable must be set"}"
-: "${ARGS:? "ARGS environment variable must be set"}"
 
 # Optional environment variables
+ARGS="${ARGS:-}"
 NEW_ACCOUNT_NAME="${NEW_ACCOUNT_NAME:-}"
 TEAM_ACCOUNT_NAMES="${TEAM_ACCOUNT_NAMES:-}"
 CHILD_ACCOUNT_ID="${CHILD_ACCOUNT_ID:-}"
