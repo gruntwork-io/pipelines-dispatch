@@ -88,7 +88,7 @@ jobs:
             exit 1
           fi
 
-          if [[ $TEAM_ACCOUNT_NAMES != '[\n  \"team_account_names\"\n]' ]]; then
+          if [[ $(jq -c -M  <<< "$TEAM_ACCOUNT_NAMES") != '["team_account_names"]' ]]; then
             echo "TEAM_ACCOUNT_NAMES is not set to expected value"
             exit 1
           fi
