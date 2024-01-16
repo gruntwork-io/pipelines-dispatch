@@ -1,5 +1,22 @@
 name: Test Trigger Workflow
 
+# This workflow tests the `pipepines-dispatch` in a limited fashion.
+
+# It does this by triggering the `action.yml` workflow, and then checking that the
+# JSON payload sent to the correct workflow has the correct inputs set.
+
+## Limitations
+
+# When testing token presigning it test that that the pipelines-dispatch action correctly invokes the pipelines CLI,
+# and appends the stdout of that operation to the JSON payload sent to the correct workflow.
+
+# It does not test that the pipelines CLI is correctly installed (as it doesn't bother to actually install it as that
+# would require using a token to install the pipelines CLI), or that the `presigned_caller_identity` value is valid
+# (since that requires a valid AWS account).
+
+# Instead, it uses a simple `pipelines` script that just echos a fake token, and tests that the
+# output is set correctly in the JSON payload in the workflow it invokes.
+
 on:
   workflow_dispatch:
   pull_request:
@@ -14,30 +31,27 @@ jobs:
 
     strategy:
       # This is to avoid rate limiting issues.
-      max-parallel: 2
+      max-parallel: 1
       matrix:
         change_type:
-            - ModuleChanged
-            - ModuleDeleted
-            - ModuleAdded
-            - ModulesAdded
-            - EnvCommonChanged
-            - EnvCommonDeleted
-            - EnvCommonAdded
-            - AccountRequested
-            - TeamAccountsRequested
-            - AccountAdded
-            - TeamAccountsAdded
-            - AccountChanged
-            - PipelinesPermissionAdded
-            - PipelinesPermissionChanged
-            - PipelinesPermissionDeleted
-            - PipelinesEnvCommonPermissionAdded
-            - PipelinesEnvCommonPermissionChanged
-            - PipelinesEnvCommonPermissionDeleted
+          - ModuleChanged
+          - AccountRequested
+          - TeamAccountsRequested
+          - AccountAdded
+          - TeamAccountsAdded
+        presign:
+          - 'true'
+          - 'false'
+
     steps:
       - name: Checkout repository
         uses: actions/checkout@v4
+
+      - name: Create fake pipelines binary
+        if: matrix.presign == 'true'
+        run: |
+          sudo echo 'echo "fake token"' > /usr/local/bin/pipelines
+          sudo chmod +x /usr/local/bin/pipelines
 
       - name: Trigger action.yml workflow
         uses: "./"
@@ -59,3 +73,6 @@ jobs:
               "TeamAccountNames": ["team_account_names"]
             }
           actor: "actor"
+          presign_token: ${{ matrix.presign }}
+          install_pipelines_cli: "false"
+          assume_pipelines_auth_role: "false"
