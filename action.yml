@@ -153,7 +153,10 @@ runs:
         PRESIGN_TOKEN: ${{ inputs.presign_token }}
         TEAM_ACCOUNT_NAMES: "${{ toJSON(fromJSON(inputs.additional_data).TeamAccountNames) }}"
         TEAM_ACCOUNT_DATA: ${{ inputs.additional_data }}
-      run: ./scripts/setup-action-configs.sh
+        ACTION_PATH: ${{ github.action_path }}
+      # We need this magic value found here:
+      # https://docs.github.com/en/actions/learn-github-actions/contexts#github-context
+      run: $ACTION_PATH/scripts/setup-action-configs.sh
 
     - name: Dispatch default workflow and get the run ID
       env:
