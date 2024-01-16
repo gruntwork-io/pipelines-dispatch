@@ -153,9 +153,10 @@ runs:
         PRESIGN_TOKEN: ${{ inputs.presign_token }}
         TEAM_ACCOUNT_NAMES: "${{ toJSON(fromJSON(inputs.additional_data).TeamAccountNames) }}"
         TEAM_ACCOUNT_DATA: ${{ inputs.additional_data }}
+        ACTION_PATH: ${{ github.action_path }}
       # We need this magic value found here:
-      # https://stackoverflow.com/questions/62576310/preferred-way-to-bundle-shell-scripts-with-a-github-action
-      run: ${__dirname}/scripts/setup-action-configs.sh
+      # https://docs.github.com/en/actions/learn-github-actions/contexts#github-context
+      run: $ACTION_PATH/scripts/setup-action-configs.sh
 
     - name: Dispatch default workflow and get the run ID
       env:
