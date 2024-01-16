@@ -44,6 +44,9 @@ jobs:
           - 'false'
 
     steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
       - name: Create fake pipelines binary
         if: matrix.presign == 'true'
         run: |
