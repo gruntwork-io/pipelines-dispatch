@@ -34,8 +34,8 @@ presign_caller_identity_token() {
 
 append_presigned_caller_identity_token() {
     readonly workflow_inputs="$1"
+    readonly presigned_caller_identity="$2"
 
-    presigned_caller_identity="$(presign_caller_identity_token)"
     echo "$workflow_inputs" | jq -c --arg presigned_caller_identity "$presigned_caller_identity" '. + {presigned_caller_identity: $presigned_caller_identity}'
 }
 
@@ -66,7 +66,9 @@ handle_account_request() {
         }'
     )"
     if [[ $presign_token == "true" ]]; then
-        workflow_inputs="$(append_presigned_caller_identity_token "$workflow_inputs")"
+        presigned_caller_identity="$(presign_caller_identity_token)"
+        workflow_inputs="$(append_presigned_caller_identity_token "$workflow_inputs" "$presigned_caller_identity")"
+        echo "::add-mask::$presigned_caller_identity"
     fi
     echo "workflow_inputs=$workflow_inputs" >> "$GITHUB_OUTPUT"
 }
@@ -98,7 +100,9 @@ handle_account_added() {
         }'
     )"
     if [[ $presign_token == "true" ]]; then
-        workflow_inputs="$(append_presigned_caller_identity_token "$workflow_inputs")"
+        presigned_caller_identity="$(presign_caller_identity_token)"
+        workflow_inputs="$(append_presigned_caller_identity_token "$workflow_inputs" "$presigned_caller_identity")"
+        echo "::add-mask::$presigned_caller_identity"
     fi
     echo "workflow_inputs=$workflow_inputs" >> "$GITHUB_OUTPUT"
 }
@@ -130,7 +134,9 @@ handle_team_accounts_requested() {
         }'
     )"
     if [[ $presign_token == "true" ]]; then
-        workflow_inputs="$(append_presigned_caller_identity_token "$workflow_inputs")"
+        presigned_caller_identity="$(presign_caller_identity_token)"
+        workflow_inputs="$(append_presigned_caller_identity_token "$workflow_inputs" "$presigned_caller_identity")"
+        echo "::add-mask::$presigned_caller_identity"
     fi
     echo "workflow_inputs=$workflow_inputs" >> "$GITHUB_OUTPUT"
 }
@@ -145,7 +151,7 @@ handle_team_accounts_added() {
     readonly presign_token="$7"
 
     echo "workflow=apply-new-sdlc-accounts-baseline.yml" >> "$GITHUB_OUTPUT"
-    workflow_inputs=$(jq -c -n \
+    workflow_inputs="$(jq -c -n \
         --arg management_account "$management_account" \
         --arg branch "$branch" \
         --arg infra_live_repo "$infra_live_repo" \
@@ -160,9 +166,11 @@ handle_team_accounts_added() {
             "terragrunt_command": $terragrunt_command,
             "team_account_data": $team_account_data
         }'
-    )
+    )"
     if [[ $presign_token == "true" ]]; then
-        workflow_inputs="$(append_presigned_caller_identity_token "$workflow_inputs")"
+        presigned_caller_identity="$(presign_caller_identity_token)"
+        workflow_inputs="$(append_presigned_caller_identity_token "$workflow_inputs" "$presigned_caller_identity")"
+        echo "::add-mask::$presigned_caller_identity"
     fi
     echo "workflow_inputs=$workflow_inputs" >> "$GITHUB_OUTPUT"
 }
@@ -178,7 +186,7 @@ handle_default() {
     readonly presign_token="$8"
 
     echo "workflow=terragrunt-executor.yml" >> "$GITHUB_OUTPUT"
-    workflow_inputs=$(jq -c -n \
+    workflow_inputs="$(jq -c -n \
         --arg account "$management_account" \
         --arg branch "$branch" \
         --arg infra_live_repo "$infra_live_repo" \
@@ -195,9 +203,11 @@ handle_default() {
             "pipelines_change_type": $pipelines_change_type,
             "child_account_id": $child_account_id
         }'
-    )
+    )"
     if [[ $presign_token == "true" ]]; then
-        workflow_inputs="$(append_presigned_caller_identity_token "$workflow_inputs")"
+        presigned_caller_identity="$(presign_caller_identity_token)"
+        workflow_inputs="$(append_presigned_caller_identity_token "$workflow_inputs" "$presigned_caller_identity")"
+        echo "::add-mask::$presigned_caller_identity"
     fi
     echo "workflow_inputs=$workflow_inputs" >> "$GITHUB_OUTPUT"
 }
