@@ -151,7 +151,7 @@ runs:
         ARGS: ${{ inputs.args }}
         CHILD_ACCOUNT_ID: ${{ fromJSON(inputs.additional_data).ChildAccountId }}
         PRESIGN_TOKEN: ${{ inputs.presign_token }}
-        TEAM_ACCOUNT_NAMES: "${{ toJSON(fromJSON(inputs.additional_data).TeamAccountNames) }}"
+        TEAM_ACCOUNT_NAMES: ${{ fromJSON(inputs.additional_data).TeamAccountNames }}
         TEAM_ACCOUNT_DATA: ${{ inputs.additional_data }}
         ACTION_PATH: ${{ github.action_path }}
       # We need this magic value found here:

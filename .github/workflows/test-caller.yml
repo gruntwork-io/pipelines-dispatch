@@ -70,7 +70,7 @@ jobs:
             {
               "AccountName": "new_account_name",
               "ChildAccountId": "child_account_id",
-              "TeamAccountNames": ["team_account_names"]
+              "TeamAccountNames": "team_account_name_one,team_account_name_two"
             }
           actor: "actor"
           presign_token: ${{ matrix.presign }}
