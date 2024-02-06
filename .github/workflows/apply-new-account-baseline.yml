@@ -69,7 +69,7 @@ jobs:
             exit 1
           fi
 
-          if [[ $CHILD_ACCOUNT != "new_account_name" ]]; then
+          if [[ $CHILD_ACCOUNT != "child_account_id" ]]; then
             echo "Did not receive expected child account"
             exit 1
           fi
