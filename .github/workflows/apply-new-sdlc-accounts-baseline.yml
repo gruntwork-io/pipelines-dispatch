@@ -89,7 +89,7 @@ jobs:
             exit 1
           fi
 
-          if [[ $(jq -c -M <<< "$TEAM_ACCOUNT_DATA") != '{"AccountName":"new_account_name","ChildAccountId":"child_account_id","TeamAccountNames":["team_account_names"]}' ]]; then
+          if [[ $(jq -c -M <<< "$TEAM_ACCOUNT_DATA") != '{"AccountName":"new_account_name","ChildAccountId":"child_account_id","TeamAccountNames":"team_account_name_one,team_account_name_two"}' ]]; then
             echo "Did not receive expected team account data"
             exit 1
           fi
