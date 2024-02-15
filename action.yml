@@ -45,6 +45,7 @@ inputs:
     # - AccountAdded
     # - TeamAccountsAdded
     # - AccountChanged
+    # - AccountDeleted
     # - PipelinesPermissionAdded
     # - PipelinesPermissionChanged
     # - PipelinesPermissionDeleted
@@ -275,6 +276,18 @@ runs:
           gh issue comment $PR_NUMBER --body "$COMMENT_BODY"
           echo "COMMENTED"
         fi
+
+    - name: Post Account Deletion Warning
+      if: ${{ always() && contains(inputs.command, 'plan') && inputs.change_type == 'AccountDeleted' }}
+      env:
+        GH_TOKEN: ${{ inputs.infra_live_token }}
+        REPO: ${{ inputs.repo }}
+        REPO_OWNER: ${{ inputs.repo_owner }}
+        PR_NUMBER: ${{ github.event.number }}
+      shell: bash
+      run: |
+        COMMENT_BODY=$'## Account Deletion Warning\n\n:warning: **Account Deletion** Detected.\n\nThis action will remove the account from management in Control Tower.\n\n**Please ensure that only the appropriate account request(s) have been deleted, and that the plan above properly reflects the intended account removal(s) in Control Tower.**\n\nThis **does not** close the account in AWS, however.\n\nTo complete the process of closing the account, follow the instructions [here](https://github.com/orgs/gruntwork-io/discussions/797#discussioncomment-8058207) after merging this pull request.'
+        gh issue comment $PR_NUMBER --body "$COMMENT_BODY"
 
     - name: Get requesting PR number
       id: get_pr_number
