@@ -15,6 +15,7 @@ This GitHub Action, named "Pipelines Dispatch," is designed to dispatch Terragru
 - `change_type` (required): The type of infrastructure change that occurred.
 - `additional_data` (optional): Additional data related to the change type.
 - `actor` (required): The GitHub actor responsible for the change.
+- `polling_interval_ms` (optional): "The interval, in milliseconds, to poll for the status of the dispatched job. Keep in mind that each poll will count against your GitHub Actions API rate limit. The default is 1 minute(60000 milliseconds)"
 
 ### Pipelines Presign Inputs
 
@@ -49,14 +50,14 @@ jobs:
         uses: gruntwork-io/pipelines-dispatch@v1.0.0
         with:
           account_id: ${{ secrets.ACCOUNT_ID }}
-          repo: 'infrastructure-pipelines'
-          repo_owner: 'your-company-name'
-          branch: 'main'
-          working_directory: 'path-to-your-working-directory'
-          command: 'plan'
-          args: '-destroy'
+          repo: "infrastructure-pipelines"
+          repo_owner: "your-company-name"
+          branch: "main"
+          working_directory: "path-to-your-working-directory"
+          command: "plan"
+          args: "-destroy"
           token: ${{ secrets.GITHUB_TOKEN }}
-          change_type: 'AccountAdded'
+          change_type: "AccountAdded"
           additional_data: '{"AccountName": "NewAccount"}'
           actor: ${{ github.actor }}
 ```

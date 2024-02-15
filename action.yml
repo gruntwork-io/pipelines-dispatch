@@ -22,6 +22,10 @@ inputs:
   args:
     description: "The arguments to pass into Terragrunt"
     required: true
+  polling_interval_ms:
+    description: "The interval, in milliseconds, to poll for the status of the dispatched job. Keep in mind that each poll will count against your GitHub Actions API rate limit. The default is 1 minute(60000 milliseconds)"
+    required: false
+    default: "60000"
   infra_pipelines_token:
     description: "GitHub PAT which has access to run GitHub Actions Workflows in your infrastructure-pipelines repository"
     required: true
@@ -183,7 +187,7 @@ runs:
         owner: ${{ inputs.repo_owner }}
         run_id: ${{ steps.return_dispatch.outputs.run_id }}
         run_timeout_seconds: 3600 # one hour
-        poll_interval_ms: 5000 # Optional
+        poll_interval_ms: ${{ inputs.polling_interval_ms }}
 
     - name: Completed
       if: ${{ always() }}
