@@ -15,7 +15,7 @@ This GitHub Action, named "Pipelines Dispatch," is designed to dispatch Terragru
 - `change_type` (required): The type of infrastructure change that occurred.
 - `additional_data` (optional): Additional data related to the change type.
 - `actor` (required): The GitHub actor responsible for the change.
-- `polling_interval_ms` (optional): "The interval, in milliseconds, to poll for the status of the dispatched job. Keep in mind that each poll will count against your GitHub Actions API rate limit. The default is 1 minute(60000 milliseconds)"
+- `polling_interval_ms` (optional): The interval, in milliseconds, to poll for the status of the dispatched job. Keep in mind that each poll will count against your GitHub Actions API rate limit. The default is 1 minute (60000 milliseconds).
 
 ### Pipelines Presign Inputs
 
