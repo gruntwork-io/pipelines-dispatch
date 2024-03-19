@@ -17,7 +17,7 @@ NEW_ACCOUNT_NAME="${NEW_ACCOUNT_NAME:-}"
 TEAM_ACCOUNT_NAMES="${TEAM_ACCOUNT_NAMES:-}"
 CHILD_ACCOUNT_ID="${CHILD_ACCOUNT_ID:-}"
 PRESIGN_TOKEN="${PRESIGN_TOKEN:-false}"
-TEAM_ACCOUNT_DATA="${TEAM_ACCOUNT_DATA:-}"
+NEW_ACCOUNTS="${NEW_ACCOUNTS:-}"
 
 check_pipeline_is_installed() {
     if ! command -v pipelines &> /dev/null; then
@@ -147,7 +147,7 @@ handle_team_accounts_added() {
     readonly infra_live_repo="$3"
     readonly working_directory="$4"
     readonly terragrunt_command="$5"
-    readonly team_account_data="$6"
+    readonly new_accounts="$6"
     readonly presign_token="$7"
 
     echo "workflow=apply-new-sdlc-accounts-baseline.yml" >> "$GITHUB_OUTPUT"
@@ -157,14 +157,14 @@ handle_team_accounts_added() {
         --arg infra_live_repo "$infra_live_repo" \
         --arg working_directory "$working_directory" \
         --arg terragrunt_command "$terragrunt_command" \
-        --arg team_account_data "$team_account_data" \
+        --arg new_accounts "$new_accounts" \
         '{
             "management_account": $management_account,
             "branch": $branch,
             "infra_live_repo": $infra_live_repo,
             "working_directory": $working_directory,
             "terragrunt_command": $terragrunt_command,
-            "team_account_data": $team_account_data
+            "new_accounts": $new_accounts
         }'
     )"
     if [[ $presign_token == "true" ]]; then
@@ -223,7 +223,7 @@ case "$CHANGE_TYPE" in
         handle_team_accounts_requested "$MANAGEMENT_ACCOUNT" "$BRANCH" "$INFRA_LIVE_REPO" "$WORKING_DIRECTORY" "$COMMAND $ARGS" "$TEAM_ACCOUNT_NAMES" "$PRESIGN_TOKEN"
         ;;
     TeamAccountsAdded)
-        handle_team_accounts_added "$MANAGEMENT_ACCOUNT" "$BRANCH" "$INFRA_LIVE_REPO" "$WORKING_DIRECTORY" "$COMMAND $ARGS" "$TEAM_ACCOUNT_DATA" "$PRESIGN_TOKEN"
+        handle_team_accounts_added "$MANAGEMENT_ACCOUNT" "$BRANCH" "$INFRA_LIVE_REPO" "$WORKING_DIRECTORY" "$COMMAND $ARGS" "$NEW_ACCOUNTS" "$PRESIGN_TOKEN"
         ;;
     *)
         handle_default "$MANAGEMENT_ACCOUNT" "$BRANCH" "$INFRA_LIVE_REPO" "$WORKING_DIRECTORY" "$COMMAND $ARGS" "$CHANGE_TYPE" "$CHILD_ACCOUNT_ID" "$PRESIGN_TOKEN"

@@ -59,6 +59,9 @@ inputs:
   additional_data:
     description: "Change Type specific data"
     required: false
+  new_accounts:
+    description: "The new accounts to be created"
+    required: false
   actor:
     description: "The github actor responsible for the change"
     required: true
@@ -111,6 +114,12 @@ runs:
           exit 1
         fi
 
+    - name: Check for Minimum Supported Version of the Pipelines CLI
+      shell: bash
+      env:
+        PIPELINES_CLI_VERSION: ${{ inputs.pipelines_cli_version }}
+      run: $ACTION_PATH/scripts/check-msv.sh
+
     # We only need to install the pipelines CLI if we're presigning a token
     # and we have a token to use to download the CLI. Clients might decide to
     # install the CLI before running this action, in which case we don't need
@@ -157,7 +166,7 @@ runs:
         CHILD_ACCOUNT_ID: ${{ fromJSON(inputs.additional_data).ChildAccountId }}
         PRESIGN_TOKEN: ${{ inputs.presign_token }}
         TEAM_ACCOUNT_NAMES: ${{ fromJSON(inputs.additional_data).TeamAccountNames }}
-        TEAM_ACCOUNT_DATA: ${{ inputs.additional_data }}
+        NEW_ACCOUNTS: ${{ inputs.new_accounts }}
         ACTION_PATH: ${{ github.action_path }}
       # We need this magic value found here:
       # https://docs.github.com/en/actions/learn-github-actions/contexts#github-context

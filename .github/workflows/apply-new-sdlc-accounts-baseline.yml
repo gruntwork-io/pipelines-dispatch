@@ -24,9 +24,9 @@ on:
         type: string
         description: "The infrastructure live repo on which to run terragrunt"
         required: true
-      team_account_data:
+      new_accounts:
         type: string
-        description: "JSON string representation of the team account data"
+        description: "JSON string representation of the new accounts being added"
         required: true
       working_directory:
         description: "The folder path in which terragrunt will execute"
@@ -58,7 +58,7 @@ jobs:
           WORKING_DIRECTORY: ${{ inputs.working_directory }}
           TERRAGRUNT_COMMAND: ${{ inputs.terragrunt_command }}
           MANAGEMENT_ACCOUNT: ${{ inputs.management_account }}
-          TEAM_ACCOUNT_DATA: ${{ inputs.team_account_data }}
+          NEW_ACCOUNTS: ${{ inputs.new_accounts }}
           PRESIGNED_CALLER_IDENTITY: ${{ inputs.presigned_caller_identity }}
         run: |
           # These verify the expected values sent by the workflow dispatch to this workflow in `infrastructure-pipelines`
@@ -89,7 +89,8 @@ jobs:
             exit 1
           fi
 
-          if [[ $(jq -c -M <<< "$TEAM_ACCOUNT_DATA") != '{"AccountName":"new_account_name","ChildAccountId":"child_account_id","TeamAccountNames":"team_account_name_one,team_account_name_two"}' ]]; then
+          # FIXME: Fix this.
+          if [[ $(jq -c -M <<< "$NEW_ACCOUNTS") != '{"AccountName":"new_account_name","ChildAccountId":"child_account_id","TeamAccountNames":"team_account_name_one,team_account_name_two"}' ]]; then
             echo "Did not receive expected team account data"
             exit 1
           fi

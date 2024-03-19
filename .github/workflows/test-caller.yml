@@ -72,6 +72,7 @@ jobs:
               "ChildAccountId": "child_account_id",
               "TeamAccountNames": "team_account_name_one,team_account_name_two"
             }
+          new_accounts: '[{"ID": 123, "Name": "new-account-name"}]'
           actor: "actor"
           presign_token: ${{ matrix.presign }}
           install_pipelines_cli: "false"
