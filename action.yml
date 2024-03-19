@@ -118,6 +118,7 @@ runs:
       shell: bash
       env:
         PIPELINES_CLI_VERSION: ${{ inputs.pipelines_cli_version }}
+        ACTION_PATH: ${{ github.action_path }}
       run: $ACTION_PATH/scripts/check-msv.sh
 
     # We only need to install the pipelines CLI if we're presigning a token
