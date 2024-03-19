@@ -1,4 +1,4 @@
-name: TEST Apply SDLC Account Baselines
+name: TEST Run Account(s) Baselines
 
 on:
   workflow_dispatch:
@@ -89,7 +89,6 @@ jobs:
             exit 1
           fi
 
-          # FIXME: Fix this.
           if [[ $(jq -c -M <<< "$NEW_ACCOUNTS") != '{"AccountName":"new_account_name","ChildAccountId":"child_account_id","TeamAccountNames":"team_account_name_one,team_account_name_two"}' ]]; then
             echo "Did not receive expected team account data"
             exit 1

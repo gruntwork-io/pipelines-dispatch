@@ -33,22 +33,22 @@ presign_caller_identity_token() {
 }
 
 append_presigned_caller_identity_token() {
-    readonly workflow_inputs="$1"
-    readonly presigned_caller_identity="$2"
+    local -r workflow_inputs="$1"
+    local -r presigned_caller_identity="$2"
 
     echo "$workflow_inputs" | jq -c --arg presigned_caller_identity "$presigned_caller_identity" '. + {presigned_caller_identity: $presigned_caller_identity}'
 }
 
 handle_account_request() {
-    readonly management_account="$1"
-    readonly new_account_name="$2"
-    readonly branch="$3"
-    readonly infra_live_repo="$4"
-    readonly working_directory="$5"
-    readonly terragrunt_command="$6"
-    readonly presign_token="$7"
+    local -r management_account="$1"
+    local -r new_account_name="$2"
+    local -r branch="$3"
+    local -r infra_live_repo="$4"
+    local -r working_directory="$5"
+    local -r terragrunt_command="$6"
+    local -r presign_token="$7"
 
-    echo "workflow=create-account-and-generate-baselines.yml" >> "$GITHUB_OUTPUT"
+    echo "workflow=account-factory-1-provision.yml" >> "$GITHUB_OUTPUT"
     workflow_inputs="$(jq -c -n \
         --arg management_account "$management_account" \
         --arg new_account_name "$new_account_name" \
@@ -74,83 +74,15 @@ handle_account_request() {
 }
 
 handle_account_added() {
-    readonly management_account="$1"
-    readonly child_account="$2"
-    readonly branch="$3"
-    readonly infra_live_repo="$4"
-    readonly working_directory="$5"
-    readonly terragrunt_command="$6"
-    readonly presign_token="$7"
+    local -r management_account="$1"
+    local -r branch="$2"
+    local -r infra_live_repo="$3"
+    local -r working_directory="$4"
+    local -r terragrunt_command="$5"
+    local -r new_accounts="$6"
+    local -r presign_token="$7"
 
-    echo "workflow=apply-new-account-baseline.yml" >> "$GITHUB_OUTPUT"
-    workflow_inputs="$(jq -c -n \
-        --arg management_account "$management_account" \
-        --arg child_account "$child_account" \
-        --arg branch "$branch" \
-        --arg infra_live_repo "$infra_live_repo" \
-        --arg working_directory "$working_directory" \
-        --arg terragrunt_command "$terragrunt_command" \
-        '{
-            "management_account": $management_account,
-            "child_account": $child_account,
-            "branch": $branch,
-            "infra_live_repo": $infra_live_repo,
-            "working_directory": $working_directory,
-            "terragrunt_command": $terragrunt_command
-        }'
-    )"
-    if [[ $presign_token == "true" ]]; then
-        presigned_caller_identity="$(presign_caller_identity_token)"
-        workflow_inputs="$(append_presigned_caller_identity_token "$workflow_inputs" "$presigned_caller_identity")"
-        echo "::add-mask::$presigned_caller_identity"
-    fi
-    echo "workflow_inputs=$workflow_inputs" >> "$GITHUB_OUTPUT"
-}
-
-handle_team_accounts_requested() {
-    readonly management_account="$1"
-    readonly branch="$2"
-    readonly infra_live_repo="$3"
-    readonly working_directory="$4"
-    readonly terragrunt_command="$5"
-    readonly team_account_names="$6"
-    readonly presign_token="$7"
-
-    echo "workflow=create-sdlc-accounts-and-generate-baselines.yml" >> "$GITHUB_OUTPUT"
-    workflow_inputs="$(jq -c -n \
-        --arg management_account "$management_account" \
-        --arg branch "$branch" \
-        --arg infra_live_repo "$infra_live_repo" \
-        --arg working_directory "$working_directory" \
-        --arg terragrunt_command "$terragrunt_command" \
-        --arg team_account_names "$team_account_names" \
-        '{
-            "management_account": $management_account,
-            "branch": $branch,
-            "infra_live_repo": $infra_live_repo,
-            "working_directory": $working_directory,
-            "terragrunt_command": $terragrunt_command,
-            "team_account_names": $team_account_names
-        }'
-    )"
-    if [[ $presign_token == "true" ]]; then
-        presigned_caller_identity="$(presign_caller_identity_token)"
-        workflow_inputs="$(append_presigned_caller_identity_token "$workflow_inputs" "$presigned_caller_identity")"
-        echo "::add-mask::$presigned_caller_identity"
-    fi
-    echo "workflow_inputs=$workflow_inputs" >> "$GITHUB_OUTPUT"
-}
-
-handle_team_accounts_added() {
-    readonly management_account="$1"
-    readonly branch="$2"
-    readonly infra_live_repo="$3"
-    readonly working_directory="$4"
-    readonly terragrunt_command="$5"
-    readonly new_accounts="$6"
-    readonly presign_token="$7"
-
-    echo "workflow=apply-new-sdlc-accounts-baseline.yml" >> "$GITHUB_OUTPUT"
+    echo "workflow=account-factory-2-run-baselines.yml" >> "$GITHUB_OUTPUT"
     workflow_inputs="$(jq -c -n \
         --arg management_account "$management_account" \
         --arg branch "$branch" \
@@ -175,15 +107,49 @@ handle_team_accounts_added() {
     echo "workflow_inputs=$workflow_inputs" >> "$GITHUB_OUTPUT"
 }
 
+handle_team_accounts_requested() {
+    local -r management_account="$1"
+    local -r branch="$2"
+    local -r infra_live_repo="$3"
+    local -r working_directory="$4"
+    local -r terragrunt_command="$5"
+    local -r team_account_names="$6"
+    local -r presign_token="$7"
+
+    echo "workflow=account-factory-1-provision.yml" >> "$GITHUB_OUTPUT"
+    workflow_inputs="$(jq -c -n \
+        --arg management_account "$management_account" \
+        --arg branch "$branch" \
+        --arg infra_live_repo "$infra_live_repo" \
+        --arg working_directory "$working_directory" \
+        --arg terragrunt_command "$terragrunt_command" \
+        --arg team_account_names "$team_account_names" \
+        '{
+            "management_account": $management_account,
+            "branch": $branch,
+            "infra_live_repo": $infra_live_repo,
+            "working_directory": $working_directory,
+            "terragrunt_command": $terragrunt_command,
+            "team_account_names": $team_account_names
+        }'
+    )"
+    if [[ $presign_token == "true" ]]; then
+        presigned_caller_identity="$(presign_caller_identity_token)"
+        workflow_inputs="$(append_presigned_caller_identity_token "$workflow_inputs" "$presigned_caller_identity")"
+        echo "::add-mask::$presigned_caller_identity"
+    fi
+    echo "workflow_inputs=$workflow_inputs" >> "$GITHUB_OUTPUT"
+}
+
 handle_default() {
-    readonly management_account="$1"
-    readonly branch="$2"
-    readonly infra_live_repo="$3"
-    readonly working_directory="$4"
-    readonly terragrunt_command="$5"
-    readonly pipelines_change_type="$6"
-    readonly child_account_id="$7"
-    readonly presign_token="$8"
+    local -r management_account="$1"
+    local -r branch="$2"
+    local -r infra_live_repo="$3"
+    local -r working_directory="$4"
+    local -r terragrunt_command="$5"
+    local -r pipelines_change_type="$6"
+    local -r child_account_id="$7"
+    local -r presign_token="$8"
 
     echo "workflow=terragrunt-executor.yml" >> "$GITHUB_OUTPUT"
     workflow_inputs="$(jq -c -n \
@@ -216,14 +182,11 @@ case "$CHANGE_TYPE" in
     AccountRequested)
         handle_account_request "$MANAGEMENT_ACCOUNT" "$NEW_ACCOUNT_NAME" "$BRANCH" "$INFRA_LIVE_REPO" "$WORKING_DIRECTORY" "$COMMAND $ARGS" "$PRESIGN_TOKEN"
         ;;
-    AccountAdded)
-        handle_account_added "$MANAGEMENT_ACCOUNT" "$CHILD_ACCOUNT_ID" "$BRANCH" "$INFRA_LIVE_REPO" "$WORKING_DIRECTORY" "$COMMAND $ARGS" "$PRESIGN_TOKEN"
+    AccountAdded|TeamAccountsAdded)
+        handle_account_added "$MANAGEMENT_ACCOUNT" "$CHILD_ACCOUNT_ID" "$BRANCH" "$INFRA_LIVE_REPO" "$WORKING_DIRECTORY" "$COMMAND $ARGS" "$NEW_ACCOUNTS" "$PRESIGN_TOKEN"
         ;;
     TeamAccountsRequested)
         handle_team_accounts_requested "$MANAGEMENT_ACCOUNT" "$BRANCH" "$INFRA_LIVE_REPO" "$WORKING_DIRECTORY" "$COMMAND $ARGS" "$TEAM_ACCOUNT_NAMES" "$PRESIGN_TOKEN"
-        ;;
-    TeamAccountsAdded)
-        handle_team_accounts_added "$MANAGEMENT_ACCOUNT" "$BRANCH" "$INFRA_LIVE_REPO" "$WORKING_DIRECTORY" "$COMMAND $ARGS" "$NEW_ACCOUNTS" "$PRESIGN_TOKEN"
         ;;
     *)
         handle_default "$MANAGEMENT_ACCOUNT" "$BRANCH" "$INFRA_LIVE_REPO" "$WORKING_DIRECTORY" "$COMMAND $ARGS" "$CHANGE_TYPE" "$CHILD_ACCOUNT_ID" "$PRESIGN_TOKEN"

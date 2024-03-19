@@ -1,4 +1,4 @@
-name: TEST Create Account and Generate Baselines
+name: TEST Provision Account(s)
 
 on:
   workflow_dispatch:
@@ -7,23 +7,30 @@ on:
         description: "A distinct ID for this workflow run"
         required: true
         type: string
-      management_account:
-        description: "Management Account"
-        required: true
-      new_account_name:
-        description: "New Account Name"
-        required: true
       branch:
-        description: "Branch"
+        description: "The branch in the infrastructure-live repo in which to run the command"
         required: true
-      infra_live_repo:
-        description: "Infra Live Repo"
-        required: true
+        type: string
       working_directory:
-        description: "Working Directory"
+        description: "The folder path in which terragrunt will execute"
         required: true
+        type: string
+      management_account:
+        description: "The AWS Account ID of the Control Tower Management Account"
+        required: true
+        type: string
       terragrunt_command:
-        description: "Terragrunt Command"
+        type: string
+        description: "The terragrunt command to run"
+        required: true
+        default: "plan"
+      infra_live_repo:
+        type: string
+        description: "The infrastructure live repo on which to run terragrunt"
+        required: true
+      team_account_names:
+        type: string
+        description: "The names of the team accounts to create"
         required: true
       presigned_caller_identity:
         description: "The presigned URL sent by the calling account"
@@ -43,7 +50,6 @@ jobs:
         env:
           DISTINCT_ID: ${{ github.event.inputs.distinct_id }}
         run: echo "$DISTINCT_ID"
-
       - name: Test Expected Inputs
         env:
           BRANCH: ${{ inputs.branch }}
@@ -51,7 +57,7 @@ jobs:
           WORKING_DIRECTORY: ${{ inputs.working_directory }}
           TERRAGRUNT_COMMAND: ${{ inputs.terragrunt_command }}
           MANAGEMENT_ACCOUNT: ${{ inputs.management_account }}
-          NEW_ACCOUNT_NAME: ${{ inputs.new_account_name }}
+          TEAM_ACCOUNT_NAMES: ${{ inputs.team_account_names }}
           PRESIGNED_CALLER_IDENTITY: ${{ inputs.presigned_caller_identity }}
         run: |
           # These verify the expected values sent by the workflow dispatch to this workflow in `infrastructure-pipelines`
@@ -59,11 +65,6 @@ jobs:
 
           if [[ $MANAGEMENT_ACCOUNT != "123" ]]; then
             echo "MANAGEMENT_ACCOUNT is not set to expected value"
-            exit 1
-          fi
-
-          if [[ $NEW_ACCOUNT_NAME != "new_account_name" ]]; then
-            echo "NEW_ACCOUNT_NAME is not set to expected value"
             exit 1
           fi
 
@@ -84,6 +85,11 @@ jobs:
 
           if [[ $TERRAGRUNT_COMMAND != "command args" ]]; then
             echo "TERRAGRUNT_COMMAND is not set to expected value"
+            exit 1
+          fi
+
+          if [[ "$TEAM_ACCOUNT_NAMES" != 'team_account_name_one,team_account_name_two' ]]; then
+            echo "TEAM_ACCOUNT_NAMES is not set to expected value"
             exit 1
           fi
 

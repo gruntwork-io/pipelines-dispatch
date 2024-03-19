@@ -4,7 +4,7 @@ set -euo pipefail
 
 : "${PIPELINES_CLI_VERSION:? "PIPELINES_CLI_VERSION environment variable must be set"}"
 
-MINIMUM_CLI_VERSION="v0.6.0"
+MINIMUM_CLI_VERSION="v0.6.1"
 
 MAJOR_VERSION=$(cut -d. -f1<<<"$PIPELINES_CLI_VERSION" | cut -c 2-)
 MINOR_VERSION=$(cut -d. -f2<<<"$PIPELINES_CLI_VERSION")
