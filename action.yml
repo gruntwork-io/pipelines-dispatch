@@ -59,6 +59,9 @@ inputs:
   additional_data:
     description: "Change Type specific data"
     required: false
+  new_accounts:
+    description: "The new accounts to be created"
+    required: false
   actor:
     description: "The github actor responsible for the change"
     required: true
@@ -80,7 +83,7 @@ inputs:
   pipelines_cli_version:
     description: "The version of the Gruntwork Pipelines CLI to use"
     required: false
-    default: "v0.4.0"
+    default: "v0.6.1"
   pipelines_auth_role:
     description: "The role to assume before running `pipelines auth presign`, which is used to authenticate the calling repo. Only necessary when pipelines auth role is provisioned and checked in infrastructure-pipelines repo."
     required: false
@@ -110,6 +113,13 @@ runs:
           echo "ERROR: You must provide a role to assume before running `pipelines auth presign`"
           exit 1
         fi
+
+    - name: Check for Minimum Supported Version of the Pipelines CLI
+      shell: bash
+      env:
+        PIPELINES_CLI_VERSION: ${{ inputs.pipelines_cli_version }}
+        ACTION_PATH: ${{ github.action_path }}
+      run: $ACTION_PATH/scripts/check-msv.sh
 
     # We only need to install the pipelines CLI if we're presigning a token
     # and we have a token to use to download the CLI. Clients might decide to
@@ -157,7 +167,7 @@ runs:
         CHILD_ACCOUNT_ID: ${{ fromJSON(inputs.additional_data).ChildAccountId }}
         PRESIGN_TOKEN: ${{ inputs.presign_token }}
         TEAM_ACCOUNT_NAMES: ${{ fromJSON(inputs.additional_data).TeamAccountNames }}
-        TEAM_ACCOUNT_DATA: ${{ inputs.additional_data }}
+        NEW_ACCOUNTS: ${{ inputs.new_accounts }}
         ACTION_PATH: ${{ github.action_path }}
       # We need this magic value found here:
       # https://docs.github.com/en/actions/learn-github-actions/contexts#github-context
