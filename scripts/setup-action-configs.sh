@@ -58,7 +58,7 @@ handle_account_request() {
         --arg terragrunt_command "$terragrunt_command" \
         '{
             "management_account": $management_account,
-            "new_account_name": $new_account_name,
+            "team_account_names": [$new_account_name],
             "branch": $branch,
             "infra_live_repo": $infra_live_repo,
             "working_directory": $working_directory,
