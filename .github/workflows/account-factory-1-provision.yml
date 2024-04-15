@@ -88,7 +88,7 @@ jobs:
             exit 1
           fi
 
-          if [[ "$TEAM_ACCOUNT_NAMES" != 'team_account_name_one,team_account_name_two' ]]; then
+          if [[ "$TEAM_ACCOUNT_NAMES" != 'team_account_name_one,team_account_name_two' ]] && [[ "$TEAM_ACCOUNT_NAMES" != 'new-account-name' ]]; then
             echo "TEAM_ACCOUNT_NAMES is not set to expected value"
             exit 1
           fi
